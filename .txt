@@ -1,0 +1,72 @@
+; 函数调用的约定：
+; 寄存器 r1 和 r2 用于传递参数，其中 r1 还用于存储返回值
+; 除 r1 和 r2 外，函数返回时应该保证其它所有寄存器都恢复到调用前的状态
+
+; 为寄存器取名可以提高代码可读性
+const res   = r1
+const arg_1 = r1
+const arg_2 = r2
+
+; 从关卡输入中读取两个参数
+in arg_1 ; 第一个输入为 2
+in arg_2 ; 第二个输入为 5
+
+call power ; 计算 2 的 5 次方
+out res ; 结果应为 32
+
+multiply:
+
+    ; 将 r3 的值压栈。此后我们可以随意使用 r3 寄存器，直到函数返回时再将保存的值恢复到 r3 中
+    push r3
+
+    const lhs = r1 ; 被乘数
+    const rhs = r2 ; 乘数
+    const acc = r3 ; 积
+
+    mov acc, 0
+
+    jmp mul_condition
+    mul_start:
+    sub rhs, rhs, 1
+    add acc, acc, lhs
+    mul_condition:
+    cmp rhs, 0
+    jne mul_start
+
+    mov res, acc
+
+    ; 恢复函数调用之前 r3 的值
+    pop r3
+
+    ret
+
+power:
+
+    ; 将 r3 和 r4 压栈。此后我们可以随意使用它们，直到函数返回时再将保存的值恢复到这两个寄存器中。
+    push r3
+    push r4
+
+    const base = r3
+    const rem_pow = r4 ; 剩余的指数
+
+    mov base, arg_1
+    sub rem_pow, arg_2, 1
+
+    ; 直到剩余指数为 0 以前，反复将结果乘 2，并将指数减 1
+    pow_start:
+    sub rem_pow, rem_pow, 1
+
+    mov arg_2, base
+
+    call multiply
+
+    pow_condition:
+    cmp rem_pow, 0
+    jne pow_start
+
+    ; 恢复函数调用前的寄存器值
+    pop r4
+    pop r3
+
+    ret ; 最后一次乘法函数调用的结果已存储在 r1 中，直接返回即可
+

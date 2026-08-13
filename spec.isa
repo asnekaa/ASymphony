@@ -21,10 +21,6 @@ r13 1101
 sp 1110
 lr 1111
 
-[patterns]
-
-pattern size(width, machine_code)
-
 [instructions]
 
 nop
@@ -125,6 +121,10 @@ add %a(register), %b(register), %c(register)
 00011000 aaaabbbb 0000cccc 00000000
 # 将寄存器 %b 和寄存器 %c 的值相加，并将结果存入寄存器 %a 。
 
+add %a(register), %b(register)
+00011000 aaaaaaaa 0000bbbb 00000000
+# 将寄存器 %a 和寄存器 %b 的值相加，并将结果存入寄存器 %a 。
+
 add %a(register), %b(register), %c:U16(immediate | label)
 01011000 aaaabbbb cccccccc cccccccc
 # 将寄存器 %b 的值和固定值 %c 相加，并将结果存入寄存器 %a 。
@@ -163,19 +163,19 @@ mod %a(register), %b(register), %c:U16(immediate | label)
 
 
 jmp %a(register)
-00100000 00001111 0000aaaa 00000000
+00100000 00000000 0000aaaa 00000000
 # 令程序跳转至寄存器 %a 指定的地址。
 
 jmp.c %a(register)
-10100000 00001111 0000aaaa 00000000
+10100000 00000000 0000aaaa 00000000
 # 若条件寄存器为1，则令程序跳转至寄存器 %a 指定的地址。
 
 jmp %a:U16(immediate | label)
-01100000 00001111 aaaaaaaa aaaaaaaa
+01100000 00000000 aaaaaaaa aaaaaaaa
 # 令程序跳转至地址 %a 。
 
 jmp.c %a:U16(immediate | label)
-11100000 00001111 aaaaaaaa aaaaaaaa
+11100000 00000000 aaaaaaaa aaaaaaaa
 # 若条件寄存器为1，则令程序跳转至地址 %a 。
 
 eq %a(register), %b(register)
@@ -336,6 +336,10 @@ mov %a(register), %b:U16(immediate | label)
 01010001 aaaa0000 bbbbbbbb bbbbbbbb
 # 将立即数 %b 存入寄存器 %a 。
 
+mov.c %a(register), %b:U16(immediate | label)
+11010001 aaaa0000 bbbbbbbb bbbbbbbb
+# 若条件寄存器为1，将立即数 %b 存入寄存器 %a 。
+
 not %a(register), %b(register)
 00010011 aaaa0000 0000bbbb 00000000
 # 对寄存器 %b 的值按位取反，将结果存入寄存器 %a 。
@@ -354,12 +358,95 @@ neg %a(register), %b:U16(immediate | label)
 
 clr %a(register)
 00011000 aaaa0000 00000000 00000000
+# 将寄存器 %a 的值清零。
 
 inc %a(register)
 01011000 aaaaaaaa 00000000 00000001
+# 将寄存器 %a 的值加一。
 
 dec %a(register)
 01011001 aaaaaaaa 00000000 00000001
+# 将寄存器 %a 的值减一。
+
+je %a:U16(immediate | label), %b(register), %c(register)
+00100001 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 等于 %c ，则令程序跳转至地址 %a 。该指价于下列指令序列：   eq %b %c   jmp.c %a 。
+
+je %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100001 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 等于立即数 %c ，则令程序跳转至地址 %a 。该指价于下列指令序列：   eq %b %c   jmp.c %a 。
+
+jne %a:U16(immediate | label), %b(register), %c(register)
+00100010 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 等于 %c ，则令程序跳转至地址 %a 。该指价于下列指令序列：   ne %b %c   jmp.c %a 。
+
+jne %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100010 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 等于立即数 %c ，则令程序跳转至地址 %a 。该指价于下列指令序列：   ne %b %c   jmp.c %a 。
+
+jb %a:U16(immediate | label) %b(register) %c(register)
+00100011 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ult %b %c   jmp.c %a 。
+
+jb %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100011 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于立即数 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ult %b %c   jmp.c %a 。
+
+jae %a:U16(immediate | label), %b(register), %c(register)
+00100100 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于等于 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   uge %b %c   jmp.c %a 。
+
+jae %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100100 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于等于 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   uge %b %c   jmp.c %a 。
+
+jbe %a:U16(immediate | label), %b(register), %c(register)
+00100101 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于等于 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ule %b %c   jmp.c %a 。
+
+jbe %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100101 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于等于 %c （无符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ule %b %c   jmp.c %a 。
+
+ja %a:U16(immediate | label), %b(register), %c(register)
+00100110 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ugt %b %c   jmp.c %a 。
+
+ja %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100110 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   ugt %b %c   jmp.c %a 。
+
+jl %a:U16(immediate | label), %b(register), %c(register)
+00100111 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   slt %b %c   jmp.c %a 。
+
+jl %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01100111 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   slt %b %c   jmp.c %a 。
+
+jge %a:U16(immediate | label), %b(register), %c(register)
+00101000 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于等于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sge %b %c   jmp.c %a 。
+
+jge %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01101000 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于等于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sge %b %c   jmp.c %a 。
+
+jle %a:U16(immediate | label), %b(register), %c(register)
+00101001 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sle %b %c   jmp.c %a 。
+
+jle %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01101001 0000bbbb cccccccc cccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 小于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sle %b %c   jmp.c %a 。
+
+jg %a:U16(immediate | label), %b(register), %c(register)
+00101010 0000bbbb 0000cccc 00000000 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sg %b %c   jmp.c %a 。
+
+jg %a:U16(immediate | label), %b(register), %c:U16(immediate | label)
+01101010 0000bbbb cccccccccccc cccccccccccc 11100000 00000000 aaaaaaaa aaaaaaaa
+# 若 %b 大于 %c （有符号），则令程序跳转至地址 %a 。该指价于下列指令序列：   sg %b %c   jmp.c %a 。
 
 
 push %a(register)
@@ -374,6 +461,10 @@ call %a(label)
 00000101 11110000 00000000 00000000   01011000 11111111 00000000 00010100   01011001 11101110 00000000 00000100   00110110 00001111 00001110 00000000   01100000 00001111 aaaaaaaa aaaaaaaa
 # 调用函数 %a 。该指令等价于下列指令序列：   counter lr   add lr, lr, 20   sub sp, sp, 4   store_32 [sp], lr   jmp %a
 
+call.c %a(label)
+10000101 11110000 00000000 00000000   11011000 11111111 00000000 00010100   11011001 11101110 00000000 00000100   10110110 00001111 00001110 00000000   11100000 00001111 aaaaaaaa aaaaaaaa
+# 调用函数 %a 。该指令等价于下列指令序列：   counter.c lr   add.c lr, lr, 20   sub.c sp, sp, 4   store_32.c [sp], lr   jmp.c %a
+
 ret
-00110010 11110000 00001110 00000000   01011000 11101110 00000000 00000100   01100000 00001111 00001111 00000000
+00110010 11110000 00001110 00000000   01011000 11101110 00000000 00000100   00100000 00001111 00001111 00000000
 # 返回上次的函数调用点。该指令等价于下列指令序列：   load_32 lr, [sp]   add sp, sp, 4   jmp lr
