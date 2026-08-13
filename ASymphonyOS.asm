@@ -33,6 +33,10 @@ cmd_str_echo_space:
 "echo "
 U8 0
 
+msg_newline:
+"\n"
+U8 0
+
 const arg_1 = r1
 const res_1 = r1
 const arg_2 = r2
@@ -268,6 +272,10 @@ wait_input:
     mov arg_1, VAR_INPUT_BUFFER
     add arg_1, 5
     call sys_print_string
+    
+    mov arg_1, msg_newline
+    call sys_print_string
+
     jmp wait_input_end
     
     not_echo_cmd:
@@ -359,22 +367,22 @@ sys_check_prefix:
     push r5
     push r6
 
-    const str_ptr = r3
+    const check_prefix_str_ptr = r3
     const prefix_ptr = r4
     const str_ch = r5
     const prefix_ch = r6
     
-    mov str_ptr, arg_1
+    mov check_prefix_str_ptr, arg_1
     mov prefix_ptr, arg_2
 
 check_prefix_loop:
     load_8 prefix_ch, [prefix_ptr]
-    load_8 str_ch, [str_ptr]
+    load_8 str_ch, [check_prefix_str_ptr]
     
     je check_prefix_match, prefix_ch, 0
     jne check_prefix_nomatch, str_ch, prefix_ch
     
-    inc str_ptr
+    inc check_prefix_str_ptr
     inc prefix_ptr
     jmp check_prefix_loop
 
