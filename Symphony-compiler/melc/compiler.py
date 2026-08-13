@@ -30,7 +30,7 @@ KEYWORDS = {
 }
 
 TWO_CHAR = {"->", "==", "!=", "<=", ">=", "<<", ">>", "&&", "||"}
-ONE_CHAR = set("{}()[],:;=+-*/&|^~<>")
+ONE_CHAR = set("{}()[],:;=+-*/&|^~<>%")
 
 
 @dataclass
@@ -514,6 +514,8 @@ PRECEDENCE = {
     "+": 9,
     "-": 9,
     "*": 10,
+    "/": 10,
+    "%": 10,
 }
 
 
@@ -703,9 +705,12 @@ class Codegen:
             "^": "xor",
             "<<": "lsl",
             ">>": "lsr",
+            "*": "mul",
+            "/": "div",
+            "%": "mod",
         }
-        if expr.op == "*":
-            raise CompileError("'*' is reserved but multiplication is not implemented for Symphony yet")
+        # if expr.op == "*":
+        #     raise CompileError("'*' is reserved but multiplication is not implemented for Symphony yet")
         if expr.op not in op_map:
             raise CompileError(f"unsupported binary operator {expr.op}")
         self.lines.append(f"{op_map[expr.op]} {target}, {left}, {right}")
