@@ -37,18 +37,18 @@ const cursor = r3
 const vram_ptr = r4
 const buf_ptr = r5
 
-const VAR_CURSOR_POS = 10000 ; 光标位置
-const VAR_INPUT_BUFFER = 20000 ; 命令行输入缓冲区 (32字节)
-const VRAM_BASE = 30000 ; 显存起始地址
-const SCREEN_SIZE = 3840 ; 96 * 40 = 3840
-const ENTER = 10
-const BACKSPACE = 13
-const SPACE = 32
+const VAR_CURSOR_POS = 10000    ; Cursor position
+const VAR_INPUT_BUFFER = 20000  ; Command input buffer (32 bytes)
+const VRAM_BASE = 30000         ; Video RAM base address
+const SCREEN_SIZE = 3840        ; Screen size: 96 * 40 = 3840
+const ENTER = 10                ; Enter key ASCII
+const BACKSPACE = 13            ; Backspace key ASCII
+const SPACE = 32                ; Space character ASCII
 
 boot:
-	push r3
-	const screen_opt = r3
-	
+    push r3
+    const screen_opt = r3
+    
     screen screen_opt, 0
     inc screen_opt
     screen screen_opt, VRAM_BASE
@@ -119,7 +119,7 @@ sys_print_string:
     ret
 
 sys_print_char:
-	push r3
+    push r3
     push r4
     push r5
 
@@ -146,7 +146,7 @@ sys_print_char:
     mov vram_ptr, VRAM_BASE
     add vram_ptr, cursor
     mov temp_val, SPACE
-    store_8 [vram_ptr], temp_val ; 用空格覆盖原来的字符
+    store_8 [vram_ptr], temp_val
     jmp char_update_cursor
 
 	char_newline:
@@ -169,11 +169,11 @@ sys_print_char:
     ret
 
 wait_input:
-	push r3
-	push r4
-	push r5
-	
-	const key_char = r3
+    push r3
+    push r4
+    push r5
+    
+    const key_char = r3
     const check_empty = r4
 	
     ; 初始化输入缓冲区指针
@@ -200,7 +200,7 @@ wait_input:
 
 	handle_backspace:
     ; 如果缓冲区为空，则忽略退格
-    je wait_input, buf_ptr, VAR_INPUT_BUFFER
+    je wait_input_loop, buf_ptr, VAR_INPUT_BUFFER
     
     ; 缓冲区指针回退
     dec buf_ptr
@@ -208,7 +208,7 @@ wait_input:
     ; 屏幕执行退格动作
     mov arg_1, BACKSPACE
     call sys_print_char
-    jmp wait_input
+    jmp wait_input_loop
 
 	handle_enter:
     ; 打印换行
@@ -239,7 +239,7 @@ wait_input:
     call sys_strcmp
     eq res_1, 1
     call.c sys_clear_screen
-    jmp.c wait_input_end
+    je wait_input_end, res_1, 1
 
     ; 未知命令
     mov arg_1, msg_error
@@ -315,7 +315,7 @@ sys_strcmp:
     ret
 
 main:
-	call boot
-	main_loop:
-	call os_shell
-	jmp main_loop
+    call boot
+main_loop:
+    call os_shell
+    jmp main_loop
