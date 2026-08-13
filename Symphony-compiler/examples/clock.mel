@@ -1,0 +1,158 @@
+const SCREEN_MODE_ASCII32: u16 = 1;
+const UTC8_OFFSET: u32 = 28800;
+const SECONDS_PER_DAY: u32 = 86400;
+const NANOSECONDS_PER_SECOND: u32 = 1000000000;
+const CLOCK_OFFSET: u16 = 7068;
+const SCREEN_BYTES: u16 = 15360;
+const COLOR_YELLOW: u8 = 0xFC;
+const COLOR_BLACK: u8 = 0x00;
+
+static screen_cursor: u16 = 0;
+static division_remainder: u32 = 0;
+static nanoseconds_remainder: u32 = 0;
+static time_high_word: u32 = 0;
+static time_low_word: u32 = 0;
+static clock_template: [u8; _] = b"TIME  00:00:00\0";
+static framebuffer: [u8; 1] = zeroed;
+
+fn main() -> void {
+    stack_set(0xFF00);
+    clear_buffer(framebuffer, SCREEN_BYTES);
+    screen_mode(SCREEN_MODE_ASCII32);
+    screen_buffer(framebuffer);
+
+    screen_cursor = framebuffer + CLOCK_OFFSET;
+    print_string(clock_template);
+
+    let timestamp: u32 = 0;
+    let deadline_low: u32 = 0;
+    let hour: u8 = 0;
+    let minute: u8 = 0;
+    let second: u8 = 0;
+    let current_low: u32 = 0;
+
+    // Perform all expensive division only once during startup.
+    time_snapshot(time_high_word, time_low_word);
+    timestamp = nanoseconds_to_seconds(time_high_word, time_low_word);
+    deadline_low = time_low_word + (NANOSECONDS_PER_SECOND - nanoseconds_remainder);
+
+    udiv32(timestamp + UTC8_OFFSET, SECONDS_PER_DAY);
+    timestamp = division_remainder;
+    hour = udiv32(timestamp, 3600);
+    timestamp = division_remainder;
+    minute = udiv32(timestamp, 60);
+    second = division_remainder;
+
+    write_two_digits_fast(framebuffer + CLOCK_OFFSET + 24, hour);
+    write_two_digits_fast(framebuffer + CLOCK_OFFSET + 36, minute);
+    write_two_digits_fast(framebuffer + CLOCK_OFFSET + 48, second);
+
+    loop {
+        current_low = time_low();
+        if (current_low - deadline_low) >= 0 {
+            deadline_low = deadline_low + NANOSECONDS_PER_SECOND;
+            second = second + 1;
+
+            if second == 60 {
+                second = 0;
+                minute = minute + 1;
+                if minute == 60 {
+                    minute = 0;
+                    hour = hour + 1;
+                    if hour == 24 {
+                        hour = 0;
+                    }
+                    write_two_digits_fast(framebuffer + CLOCK_OFFSET + 24, hour);
+                }
+                write_two_digits_fast(framebuffer + CLOCK_OFFSET + 36, minute);
+            }
+            write_two_digits_fast(framebuffer + CLOCK_OFFSET + 48, second);
+        }
+    }
+}
+
+fn clear_buffer(address: u16, size: u16) -> void {
+    while size != 0 {
+        store8(address, 0);
+        address = address + 1;
+        size = size - 1;
+    }
+}
+
+// Divide a 64-bit nanosecond timestamp by 1,000,000,000.
+// The current Unix-seconds quotient fits in the returned low 32 bits.
+fn nanoseconds_to_seconds(high: u32, low: u32) -> u32 {
+    let quotient: u32 = 0;
+    let remainder: u32 = 0;
+    let bit: u16 = 64;
+
+    while bit != 0 {
+        bit = bit - 1;
+        remainder = remainder << 1;
+
+        if bit >= 32 {
+            remainder = remainder | ((high >> (bit - 32)) & 1);
+        } else {
+            remainder = remainder | ((low >> bit) & 1);
+        }
+
+        if remainder >= NANOSECONDS_PER_SECOND {
+            remainder = remainder - NANOSECONDS_PER_SECOND;
+            if bit < 32 {
+                quotient = quotient | (1 << bit);
+            }
+        }
+    }
+
+    nanoseconds_remainder = remainder;
+    return quotient;
+}
+
+// Binary long division. The quotient is returned and the remainder is global.
+fn udiv32(value: u32, divisor: u32) -> u32 {
+    let quotient: u32 = 0;
+    let remainder: u32 = 0;
+    let bit: u16 = 32;
+
+    while bit != 0 {
+        bit = bit - 1;
+        remainder = (remainder << 1) | ((value >> bit) & 1);
+        if remainder >= divisor {
+            remainder = remainder - divisor;
+            quotient = quotient | (1 << bit);
+        }
+    }
+
+    division_remainder = remainder;
+    return quotient;
+}
+
+fn write_two_digits_fast(address: u16, value: u8) -> void {
+    let tens: u8 = 0;
+    while value >= 10 {
+        value = value - 10;
+        tens = tens + 1;
+    }
+    store8(address, tens + 48);
+    store8(address + 4, value + 48);
+}
+
+fn print_string(text: u16) -> void {
+    let ch: u8 = 0;
+    loop {
+        ch = load8(text);
+        if ch == 0 {
+            return;
+        }
+        put_char(ch);
+        text = text + 1;
+    }
+}
+
+fn put_char(ch: u8) -> void {
+    store8(screen_cursor, ch);
+    store8(screen_cursor + 1, COLOR_YELLOW);
+    store8(screen_cursor + 2, COLOR_BLACK);
+    store8(screen_cursor + 3, 0);
+    screen_cursor = screen_cursor + 4;
+}

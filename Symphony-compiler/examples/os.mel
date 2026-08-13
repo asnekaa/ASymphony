@@ -1,0 +1,267 @@
+const KEYBOARD_MASK_KEY: u16 = 0x00FF;
+const KEYBOARD_MASK_EVENT: u16 = 0x0100;
+const KEYBOARD_EVENT_PRESSED: u16 = 0x0100;
+
+const KEY_ENTER: u16 = 10;
+const KEY_BACKSPACE: u16 = 13;
+const KEY_SHIFT: u16 = 16;
+
+const SCREEN_MODE_INDEX: u16 = 0;
+const SCREEN_MODE_ASCII32: u16 = 1;
+const SCREEN_OFFSET_INDEX: u16 = 1;
+const SCREEN_WIDTH: u16 = 96;
+const SCREEN_SIZE: u16 = 15360;
+const INPUT_MAX_LENGTH: u16 = 79;
+
+const COLOR_WHITE: u16 = 0xFF;
+const COLOR_YELLOW: u16 = 0xFC;
+
+static screen_cursor: u16 = 0;
+static screen_column: u16 = 0;
+static text_foreground: u8 = 0xFF;
+static text_background: u8 = 0x00;
+
+static cmd_help: [u8; _] = b"help\0";
+static cmd_clear: [u8; _] = b"clear\0";
+static cmd_time: [u8; _] = b"time\0";
+static cmd_reboot: [u8; _] = b"reboot\0";
+
+static str_prompt: [u8; _] = b"> \0";
+static str_help: [u8; _] = b"echo hello, help, clear, time, reboot\0";
+static str_time: [u8; _] = b"time read\0";
+static str_unknown: [u8; _] = b"unknown command\0";
+
+static boot_banner: [u8; _] = b"Symphony OS v0.1\nCopyright (C) 2026\n\nMemory initialized.\nScreen: ASCII 8 (96x40)\nKeyboard: OK\n\nShift input enabled.\nType \"help\" for available commands.\n\n\0";
+
+static input_buffer: [u8; 80] = zeroed;
+static framebuffer: [u8; 3] = zeroed;
+#显存
+fn main() -> void {
+    stack_set(0xFF00);
+    screen_buffer(framebuffer);
+    screen_mode(SCREEN_MODE_ASCII32);
+
+    screen_cursor = framebuffer;
+    screen_column = 0;
+    clear_screen();
+    text_foreground = COLOR_YELLOW;
+    print_string(boot_banner);
+    text_foreground = COLOR_WHITE;
+    print_prompt();
+
+    let shift_pressed: bool = false;
+    let input_cursor: u16 = input_buffer;
+    let input_length: u16 = 0;
+    let event: u16 = 0;
+    let key: u16 = 0;
+
+    loop {
+        event = keyboard_read();
+        key = event & KEYBOARD_MASK_KEY;
+        event = event & KEYBOARD_MASK_EVENT;
+
+        if key == KEY_SHIFT {
+            if event == KEYBOARD_EVENT_PRESSED {
+                shift_pressed = true;
+            } else {
+                shift_pressed = false;
+            }
+            continue;
+        }
+
+        if event != KEYBOARD_EVENT_PRESSED {
+            continue;
+        }
+
+        if key == KEY_ENTER {
+            store8(input_cursor, 0);
+            newline();
+            execute_command(input_buffer);
+            print_prompt();
+            input_cursor = input_buffer;
+            input_length = 0;
+            continue;
+        }
+
+        if key == KEY_BACKSPACE {
+            if input_length != 0 {
+                input_cursor = input_cursor - 1;
+                input_length = input_length - 1;
+
+                if screen_column == 0 {
+                    screen_cursor = screen_cursor - 4;
+                    screen_column = SCREEN_WIDTH - 1;
+                } else {
+                    screen_cursor = screen_cursor - 4;
+                    screen_column = screen_column - 1;
+                }
+
+                store8(screen_cursor, 0);
+                store8(screen_cursor + 1, 0);
+                store8(screen_cursor + 2, 0);
+                store8(screen_cursor + 3, 0);
+                store8(input_cursor, 0);
+            }
+            continue;
+        }
+
+        if input_length == INPUT_MAX_LENGTH {
+            continue;
+        }
+
+        if shift_pressed == true {
+            key = apply_shift(key);
+        }
+
+        put_char(key);
+        store8(input_cursor, key);
+        input_cursor = input_cursor + 1;
+        input_length = input_length + 1;
+    }
+}
+
+fn apply_shift(ch: u16) -> u16 {
+    if ch >= 97 {
+        if ch <= 122 {
+            return ch - 32;
+        }
+    }
+
+    if ch == 49 { return 33; }
+    if ch == 50 { return 64; }
+    if ch == 51 { return 35; }
+    if ch == 52 { return 36; }
+    if ch == 53 { return 37; }
+    if ch == 54 { return 94; }
+    if ch == 55 { return 38; }
+    if ch == 56 { return 42; }
+    if ch == 57 { return 40; }
+    if ch == 48 { return 41; }
+    if ch == 45 { return 95; }
+    if ch == 61 { return 43; }
+    if ch == 91 { return 123; }
+    if ch == 93 { return 125; }
+    if ch == 92 { return 124; }
+    if ch == 59 { return 58; }
+    if ch == 39 { return 34; }
+    if ch == 44 { return 60; }
+    if ch == 46 { return 62; }
+    if ch == 47 { return 63; }
+    if ch == 96 { return 126; }
+    return ch;
+}
+
+fn put_char(ch: u16) -> void {
+    store8(screen_cursor, ch);
+    store8(screen_cursor + 1, text_foreground);
+    store8(screen_cursor + 2, text_background);
+    store8(screen_cursor + 3, 0);
+    screen_cursor = screen_cursor + 4;
+    screen_column = screen_column + 1;
+    if screen_column == SCREEN_WIDTH {
+        screen_column = 0;
+    }
+}
+
+fn newline() -> void {
+    screen_cursor = screen_cursor + ((SCREEN_WIDTH - screen_column) << 2);
+    screen_column = 0;
+}
+
+fn print_prompt() -> void {
+    print_string(str_prompt);
+}
+
+fn print_string(text: u16) -> void {
+    let ch: u8 = 0;
+    loop {
+        ch = load8(text);
+        if ch == 0 {
+            return;
+        }
+        if ch == 10 {
+            newline();
+        } else {
+            put_char(ch);
+        }
+        text = text + 1;
+    }
+}
+
+fn string_eq(left: u16, right: u16) -> bool {
+    let a: u8 = 0;
+    let b: u8 = 0;
+    loop {
+        a = load8(left);
+        b = load8(right);
+        if a != b {
+            return false;
+        }
+        if a == 0 {
+            return true;
+        }
+        left = left + 1;
+        right = right + 1;
+    }
+}
+
+fn clear_screen() -> void {
+    let cursor: u16 = framebuffer;
+    let remaining: u16 = SCREEN_SIZE;
+    while remaining != 0 {
+        store8(cursor, 0);
+        cursor = cursor + 1;
+        remaining = remaining - 1;
+    }
+}
+
+fn try_echo(text: u16) -> bool {
+    if load8(text) != 101 { return false; }
+    if load8(text + 1) != 99 { return false; }
+    if load8(text + 2) != 104 { return false; }
+    if load8(text + 3) != 111 { return false; }
+
+    if load8(text + 4) == 0 {
+        newline();
+        return true;
+    }
+    if load8(text + 4) == 32 {
+        print_string(text + 5);
+        newline();
+        return true;
+    }
+    return false;
+}
+
+fn execute_command(text: u16) -> void {
+    if load8(text) == 0 {
+        return;
+    }
+    if try_echo(text) == true {
+        return;
+    }
+    if string_eq(text, cmd_help) == true {
+        print_string(str_help);
+        newline();
+        return;
+    }
+    if string_eq(text, cmd_clear) == true {
+        clear_screen();
+        screen_cursor = framebuffer;
+        screen_column = 0;
+        return;
+    }
+    if string_eq(text, cmd_time) == true {
+        time_high();
+        time_low();
+        print_string(str_time);
+        newline();
+        return;
+    }
+    if string_eq(text, cmd_reboot) == true {
+        restart();
+        return;
+    }
+    print_string(str_unknown);
+    newline();
+}
