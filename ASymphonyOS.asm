@@ -16,8 +16,9 @@ U8 0
 
 msg_help:
 "Available commands:\n"
-"  help  - Show this message\n"
-"  clear - Clear the screen\n"
+"  help        - Show this message\n"
+"  clear       - Clear the screen\n"
+"  echo <text> - Display text\n"
 U8 0
 
 cmd_str_help:
@@ -26,6 +27,10 @@ U8 0
 
 cmd_str_clear:
 "clear"
+U8 0
+
+cmd_str_echo_space:
+"echo "
 U8 0
 
 const arg_1 = r1
@@ -45,6 +50,8 @@ const ENTER = 10                ; Enter key ASCII
 const BACKSPACE = 13            ; Backspace key ASCII
 const SPACE = 32                ; Space character ASCII
 
+
+
 boot:
     push r3
     const screen_opt = r3
@@ -63,6 +70,8 @@ boot:
     pop r3
     ret
 
+
+
 os_shell:
     ; 打印提示符 "> "
     mov arg_1, msg_prompt
@@ -71,7 +80,9 @@ os_shell:
     call wait_input
     
     ret
-    
+
+
+
 sys_clear_screen:
     push r4
     push r5
@@ -93,7 +104,9 @@ sys_clear_screen:
     pop r5
     pop r4
     ret
-    
+
+
+
 sys_print_string:
     push r3
     push r4
@@ -117,6 +130,8 @@ sys_print_string:
     pop r4
     pop r3
     ret
+
+
 
 sys_print_char:
     push r3
@@ -167,6 +182,8 @@ sys_print_char:
     pop r4
     pop r3
     ret
+
+
 
 wait_input:
     push r3
@@ -241,6 +258,19 @@ wait_input:
     call.c sys_clear_screen
     je wait_input_end, res_1, 1
 
+    ; 检查 "echo " 前缀
+    mov arg_1, VAR_INPUT_BUFFER
+    mov arg_2, cmd_str_echo_space
+    call sys_check_prefix
+    jne not_echo_cmd, res_1, 1
+    
+    ; 打印 echo 后面的文本
+    mov arg_1, VAR_INPUT_BUFFER
+    add arg_1, 5
+    call sys_print_string
+    jmp wait_input_end
+    
+    not_echo_cmd:
     ; 未知命令
     mov arg_1, msg_error
     call sys_print_string
@@ -250,6 +280,8 @@ wait_input:
     pop r4
     pop r3
     ret
+
+
 
 sys_read_key:
     push r3
@@ -263,6 +295,8 @@ sys_read_key:
 
     pop r3
     ret
+
+
 
 ; ------------------------------------------
 ; sys_strcmp: 比较两个字符串是否相等
@@ -287,25 +321,23 @@ sys_strcmp:
     load_8 c1, [ptr1]
     load_8 c2, [ptr2]
     
-    ; 如果字符不相等，返回 0
-    jne strcmp_diff, c1, c2
-    
     ; 如果字符相等且为 0 (到达末尾)，返回 1
     je strcmp_same, c1, 0
     
-    store_8 [ptr1], zr
+    ; 如果字符不相等，返回 0
+    jne strcmp_diff, c1, c2
     
     ; 继续比较下一个字符
     inc ptr1
     inc ptr2
     jmp strcmp_loop
 
-	strcmp_diff:
-    clr res_1
-    jmp strcmp_end
-
 	strcmp_same:
     mov res_1, 1
+    jmp strcmp_end
+
+	strcmp_diff:
+    clr res_1
 
 	strcmp_end:
     pop r6
@@ -313,6 +345,54 @@ sys_strcmp:
     pop r4
     pop r3
     ret
+
+
+
+; ------------------------------------------
+; sys_check_prefix: 检查字符串是否以特定前缀开头
+; 参数: arg_1 (字符串指针), arg_2 (前缀指针)
+; 返回值: res_1 (1 表示是前缀, 0 表示不是)
+; ------------------------------------------
+sys_check_prefix:
+    push r3
+    push r4
+    push r5
+    push r6
+
+    const str_ptr = r3
+    const prefix_ptr = r4
+    const str_ch = r5
+    const prefix_ch = r6
+    
+    mov str_ptr, arg_1
+    mov prefix_ptr, arg_2
+
+check_prefix_loop:
+    load_8 prefix_ch, [prefix_ptr]
+    load_8 str_ch, [str_ptr]
+    
+    je check_prefix_match, prefix_ch, 0
+    jne check_prefix_nomatch, str_ch, prefix_ch
+    
+    inc str_ptr
+    inc prefix_ptr
+    jmp check_prefix_loop
+
+check_prefix_match:
+    mov res_1, 1
+    jmp check_prefix_end
+
+check_prefix_nomatch:
+    clr res_1
+
+check_prefix_end:
+    pop r6
+    pop r5
+    pop r4
+    pop r3
+    ret
+
+
 
 main:
     call boot

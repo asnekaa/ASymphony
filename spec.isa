@@ -129,6 +129,14 @@ add %a(register), %b(register), %c:U16(immediate | label)
 01011000 aaaabbbb cccccccc cccccccc
 # 将寄存器 %b 的值和固定值 %c 相加，并将结果存入寄存器 %a 。
 
+add %a(register), %b:U16(immediate | label)
+01011000 aaaaaaaa bbbbbbbb bbbbbbbb
+# 将寄存器 %a 的值和固定值 %b 相加，并将结果存入寄存器 %a 。
+
+add %a(register), %b(register), %c:U16(immediate | label)
+01011000 aaaabbbb cccccccc cccccccc
+# 将寄存器 %b 的值和固定值 %c 相加，并将结果存入寄存器 %a 。
+
 sub %a(register), %b(register), %c(register)
 00011001 aaaabbbb 0000cccc 00000000
 # 将寄存器 %b 和寄存器 %c 的值相减，并将结果存入寄存器 %a 。
