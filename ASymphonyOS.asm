@@ -10,6 +10,10 @@ msg_prompt:
 "> "
 U8 0
 
+msg_newline:
+"\n"
+U8 0
+
 msg_error:
 "Unknown command. Type 'help'.\n"
 U8 0
@@ -19,6 +23,7 @@ msg_help:
 "  help        - Show this message\n"
 "  clear       - Clear the screen\n"
 "  echo <text> - Display text\n"
+"  reboot      - Restart system\n"
 U8 0
 
 cmd_str_help:
@@ -33,8 +38,8 @@ cmd_str_echo_space:
 "echo "
 U8 0
 
-msg_newline:
-"\n"
+cmd_str_reboot:
+"reboot"
 U8 0
 
 const arg_1 = r1
@@ -267,18 +272,21 @@ wait_input:
     mov arg_2, cmd_str_echo_space
     call sys_check_prefix
     jne not_echo_cmd, res_1, 1
-    
     ; 打印 echo 后面的文本
     mov arg_1, VAR_INPUT_BUFFER
     add arg_1, 5
-    call sys_print_string
-    
+    call sys_print_string    
     mov arg_1, msg_newline
     call sys_print_string
-
     jmp wait_input_end
-    
     not_echo_cmd:
+
+    ; 比较 "reboot"
+    mov arg_1, VAR_INPUT_BUFFER
+    mov arg_2, cmd_str_reboot
+    call sys_strcmp
+    je main, res_1, 1
+    
     ; 未知命令
     mov arg_1, msg_error
     call sys_print_string
