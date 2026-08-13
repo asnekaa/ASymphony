@@ -1,0 +1,210 @@
+; ==============================================================================
+; ASymphonyOS - 极简操作系统框架
+; 包含：系统初始化、主菜单、基础 IO 库、游戏入口占位
+; ==============================================================================
+
+; 寄存器别名定义，遵守 ABI 规范
+const arg_1 = r1
+const arg_2 = r2
+const res_1 = r1
+
+; ==============================================================================
+; 1. 系统启动与初始化 (Boot)
+; ==============================================================================
+_start:
+    ; 初始化栈指针 (Stack Pointer)
+    clear sp
+
+    ; 初始化显示屏 (ASCII 8 模式)
+    ; Option 0: 切换模式 -> 0 (ASCII 8)
+    mov arg_1, 0
+    screen arg_1, 0
+
+    ; Option 1: 设置数据偏移量 (VRAM 基址) -> 0x4000
+    mov arg_1, 1
+    screen arg_1, 0x4000
+
+    ; 跳转到操作系统主循环
+    jmp os_main
+
+; ==============================================================================
+; 2. 操作系统主循环 (OS Shell / Menu)
+; ==============================================================================
+os_main:
+    ; 清空屏幕
+    call sys_clear_screen
+
+    ; 打印标题
+    mov arg_1, str_title
+    mov arg_2, 96           ; 放在第 1 行 (96 * 1)
+    call sys_print
+
+    ; 打印选项 1：贪吃蛇
+    mov arg_1, str_opt1
+    mov arg_2, 288          ; 放在第 3 行 (96 * 3)
+    call sys_print
+
+    ; 打印选项 2：扫雷
+    mov arg_1, str_opt2
+    mov arg_2, 384          ; 放在第 4 行 (96 * 4)
+    call sys_print
+
+os_input_loop:
+    ; 读取键盘输入
+    keyboard res_1
+    
+    ; 如果没有按键 (0)，继续轮询
+    eq res_1, 0
+    jmp.c os_input_loop
+
+    ; 检查是否按下 '1' (ASCII 49)
+    eq res_1, 49
+    jmp.c launch_snake
+
+    ; 检查是否按下 '2' (ASCII 50)
+    eq res_1, 50
+    jmp.c launch_minesweeper
+
+    ; 如果是其他按键，忽略并继续循环
+    jmp os_input_loop
+
+launch_snake:
+    call sys_wait_key_release ; 等待按键释放，防止带入游戏
+    call app_snake
+    jmp os_main               ; 游戏结束后返回主菜单
+
+launch_minesweeper:
+    call sys_wait_key_release
+    call app_minesweeper
+    jmp os_main
+
+; ==============================================================================
+; 3. 应用程序占位符 (Applications)
+; ==============================================================================
+
+app_snake:
+    ; 遵守 ABI：保存被调用者保存寄存器
+    push r3
+
+    call sys_clear_screen
+    mov arg_1, str_snake_wip
+    mov arg_2, 96
+    call sys_print
+
+    ; 等待用户按任意键退出
+    call sys_wait_any_key
+
+    pop r3
+    ret
+
+app_minesweeper:
+    push r3
+
+    call sys_clear_screen
+    mov arg_1, str_mine_wip
+    mov arg_2, 96
+    call sys_print
+
+    call sys_wait_any_key
+
+    pop r3
+    ret
+
+; ==============================================================================
+; 4. 系统标准库 (System Library)
+; ==============================================================================
+
+; ------------------------------------------------------------------------------
+; sys_clear_screen
+; 功能：清空 ASCII 8 模式的屏幕 (填入空格)
+; 参数：无
+; ------------------------------------------------------------------------------
+sys_clear_screen:
+    push r3
+    push r4
+
+    mov r3, 0x4000      ; r3 = VRAM 基址
+    mov r4, 3840        ; r4 = 屏幕字符总数 (96 * 40)
+
+clear_loop:
+    eq r4, 0
+    jmp.c clear_done
+    
+    mov arg_1, 32       ; 32 是空格的 ASCII 码
+    store_8 [r3], arg_1 ; 写入显存
+    
+    inc r3              ; 指针后移
+    dec r4              ; 计数器减 1
+    jmp clear_loop
+
+clear_done:
+    pop r4
+    pop r3
+    ret
+
+; ------------------------------------------------------------------------------
+; sys_print
+; 功能：在屏幕指定位置打印以 0 结尾的字符串
+; 参数：arg_1 (r1) = 字符串内存地址
+;       arg_2 (r2) = 屏幕偏移量 (0 ~ 3839)
+; ------------------------------------------------------------------------------
+sys_print:
+    push r3
+    push r4
+
+    mov r3, arg_1       ; r3 = 字符串指针
+    mov r4, 0x4000      ; r4 = VRAM 基址
+    add r4, r4, arg_2   ; r4 = VRAM 基址 + 屏幕偏移量
+
+print_loop:
+    load_8 arg_1, [r3]  ; 读取一个字符到 r1
+    eq arg_1, 0         ; 检查是否为字符串结尾 '\0'
+    jmp.c print_done
+    
+    store_8 [r4], arg_1 ; 将字符写入显存
+    
+    inc r3              ; 字符串指针后移
+    inc r4              ; 显存指针后移
+    jmp print_loop
+
+print_done:
+    pop r4
+    pop r3
+    ret
+
+; ------------------------------------------------------------------------------
+; sys_wait_key_release
+; 功能：等待直到没有按键被按下 (防止按键连击穿透)
+; ------------------------------------------------------------------------------
+sys_wait_key_release:
+    keyboard res_1
+    ne res_1, 0
+    jmp.c sys_wait_key_release
+    ret
+
+; ------------------------------------------------------------------------------
+; sys_wait_any_key
+; 功能：等待用户按下一个键，并等待其释放
+; ------------------------------------------------------------------------------
+sys_wait_any_key:
+    call sys_wait_key_release
+wait_press:
+    keyboard res_1
+    eq res_1, 0
+    jmp.c wait_press
+    call sys_wait_key_release
+    ret
+
+; ==============================================================================
+; 5. 数据段 (Data Section)
+; 注意：这里假设你的汇编器支持 .string 或类似的伪指令来定义以 0 结尾的字符串。
+; 如果不支持，你需要手动使用 .byte 或在初始化时动态写入内存。
+; ==============================================================================
+.data
+
+str_title:     .string "=== ASymphony OS v0.1 ==="
+str_opt1:      .string "1. Play Snake"
+str_opt2:      .string "2. Play Minesweeper"
+
+str_snake_wip: .string "Snake is under construction. Press any key to return."
+str_mine_wip:  .string "Minesweeper is under construction. Press any key to return."

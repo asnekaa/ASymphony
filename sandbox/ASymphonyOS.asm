@@ -1,5 +1,7 @@
 jmp main
 
+include /game/snake
+
 msg_welcome:
 "ASymphonyOS v0.1\n"
 "Screen: ASCII 8 (96*40)\n"
