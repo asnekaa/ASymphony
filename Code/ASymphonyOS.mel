@@ -32,7 +32,7 @@ static str_unknown: [u8; _] = b"unknown command\0";
 static boot_banner: [u8; _] = b"ASymphony OS v0.1\nCopyright (C) 2026\n\nMemory initialized.\nScreen: ASCII 8 (96x40)\nKeyboard: OK\n\nShift input enabled.\nType \"help\" for available commands.\n\n\0";
 
 static input_buffer: [u8; 80] = zeroed;
-static framebuffer: [u8; 3] = zeroed;
+static framebuffer: [u8; 1] = zeroed;
 
 fn main() -> void {
     screen_buffer(framebuffer);

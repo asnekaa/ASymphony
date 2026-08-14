@@ -914,5 +914,3 @@ U8 0
 U8 0
 framebuffer:
 U8 0
-U8 0
-U8 0
