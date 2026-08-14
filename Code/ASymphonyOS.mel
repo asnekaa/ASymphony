@@ -6,9 +6,7 @@ const KEY_ENTER: u16 = 10;
 const KEY_BACKSPACE: u16 = 13;
 const KEY_SHIFT: u16 = 16;
 
-const SCREEN_MODE_INDEX: u16 = 0;
 const SCREEN_MODE_ASCII32: u16 = 1;
-const SCREEN_OFFSET_INDEX: u16 = 1;
 const SCREEN_WIDTH: u16 = 96;
 const SCREEN_SIZE: u16 = 15360;
 const INPUT_MAX_LENGTH: u16 = 79;
