@@ -35,9 +35,8 @@ static boot_banner: [u8; _] = b"ASymphony OS v0.1\nCopyright (C) 2026\n\nMemory 
 
 static input_buffer: [u8; 80] = zeroed;
 static framebuffer: [u8; 3] = zeroed;
-#显存
+
 fn main() -> void {
-    stack_set(0xFF00);
     screen_buffer(framebuffer);
     screen_mode(SCREEN_MODE_ASCII32);
 
