@@ -1,12 +1,17 @@
-# Symphony Compiler
+# Symphony Compiler for ASymphony
 
 Symphony Compiler（`melc`）把 Melody 系统语言编译为 Symphony 文本汇编。
+
+本目录中的版本基于 Symphony Compiler，并针对 ASymphony 架构进行了修改和扩展。
+
+本编译器基于：
+https://github.com/lovelyKoishi/Symphony-compiler
 
 ```text
 .mel -> melc -> .txt
 ```
 
-编译器只生成 `.txt` 汇编文件，不会自动运行汇编器或生成机器码。需要机器码时，可以再把 `.txt` 交给 Symphony 汇编器。
+编译器只生成 `.txt` 汇编文件，不会自动运行汇编器或生成机器码。需要机器码时，可以再把 `.txt` 交给 ASymphony 汇编器。
 
 ## 快速开始
 
@@ -70,15 +75,13 @@ fn main() -> void {
 
 - 函数定义和调用，最多 6 个参数。
 - `return`、`if/else`、`while`、`loop`、`break`、`continue`。
-- `+`、`-`、`&`、`|`、`^`、`~`、一元负号。
+- `+`、`-`、`*`、`/`、`%`、`&`、`|`、`^`、`~`、一元负号。
 - `<<`、`>>`。
 - `==`、`!=`、`<`、`<=`、`>`、`>=`。
 - 十进制和十六进制整数。
 - `true`、`false`。
 - `//` 和 `#` 单行注释。
 - 内联汇编块：`asm { "mov r1, 1" }`。
-
-`*`、`/`、`%` 尚未实现为通用运算。需要除法时，示例程序使用整数长除法函数。
 
 ## 内置接口
 
