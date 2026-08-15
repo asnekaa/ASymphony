@@ -866,7 +866,7 @@ class Codegen:
         if name in self.locals:
             raise CompileError(f"duplicate local {name!r}")
         if not self.free_locals:
-            raise CompileError("too many locals for first compiler version")
+            raise CompileError("too many local variables")
         reg = self.free_locals.pop(0)
         self.locals[name] = reg
         return reg

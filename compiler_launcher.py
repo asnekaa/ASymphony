@@ -19,16 +19,38 @@ file_path = filedialog.askopenfilename(
 
 if file_path:
     output_path = os.path.splitext(file_path)[0] + ".txt"
+
     try:
-        subprocess.run(
+        result = subprocess.run(
             [PYTHON, "-m", "melc", file_path, "-o", output_path],
             cwd=COMPILER_DIR,
-            check=True
+            capture_output=True,
+            text=True
         )
-        messagebox.showinfo("编译完成", f"已生成：\n{output_path}")
-    except subprocess.CalledProcessError as e:
-        messagebox.showerror("编译失败", f"编译器返回错误代码：{e.returncode}")
+
+        if result.stdout:
+            print(result.stdout)
+
+        if result.stderr:
+            print(result.stderr)
+
+        if result.returncode == 0:
+            messagebox.showinfo(
+                "编译完成",
+                f"已生成：\n{output_path}"
+            )
+        else:
+            error = result.stderr.strip() or result.stdout.strip()
+
+            messagebox.showerror(
+                "编译失败",
+                f"编译器错误：\n\n{error}"
+            )
+
     except Exception as e:
-        messagebox.showerror("错误", str(e))
+        messagebox.showerror(
+            "运行错误",
+            str(e)
+        )
 
 root.destroy()
