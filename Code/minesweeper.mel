@@ -1,56 +1,74 @@
-const KEYBOARD_MASK_KEY: u16 = 0x00FF;
-const KEYBOARD_MASK_EVENT: u16 = 0x0100;
-const KEYBOARD_EVENT_PRESSED: u16 = 0x0100;
+const KEYBOARD_MASK_KEY = 0x00FF;
+const KEYBOARD_MASK_EVENT = 0x0100;
+const KEYBOARD_EVENT_PRESSED = 0x0100;
 
-const KEY_UP: u8 = 1;
-const KEY_RIGHT: u8 = 2;
-const KEY_DOWN: u8 = 3;
-const KEY_LEFT: u8 = 4;
-const KEY_A: u8 = 97;
-const KEY_D: u8 = 100;
-const KEY_R: u8 = 114;
-const KEY_S: u8 = 115;
-const KEY_W: u8 = 119;
-const KEY_X: u8 = 120;
-const KEY_Z: u8 = 122;
+const KEY_UP = 1;
+const KEY_RIGHT = 2;
+const KEY_DOWN = 3;
+const KEY_LEFT = 4;
+const KEY_ENTER = 10;
+const KEY_BACKSPACE = 8;
+const KEY_BACKSPACE_ALT = 13;
 
-const SCREEN_MODE_ASCII32: u16 = 1;
-const SCREEN_WIDTH: u16 = 96;
-const SCREEN_SIZE: u16 = 15360;
+const KEY_1 = 49;
+const KEY_2 = 50;
+const KEY_3 = 51;
+const KEY_4 = 52;
 
-const COLOR_WHITE: u8 = 0xFF;
-const COLOR_YELLOW: u8 = 0xFC;
-const COLOR_BLACK: u8 = 0x00;
+const KEY_A= 97;
+const KEY_D = 100;
+const KEY_M = 109;
+const KEY_R = 114;
+const KEY_S = 115;
+const KEY_W = 119;
+const KEY_X = 120;
+const KEY_Z = 122;
+
+const SCREEN_MODE_ASCII32 = 1;
+const SCREEN_WIDTH = 96;
+const SCREEN_SIZE = 15360;
+
+const COLOR_WHITE = 0xFF;
+const COLOR_YELLOW = 0xFC;
+const COLOR_BLACK = 0x00;
 
 // 游戏状态与内存
-static board: [u8; 256] = zeroed;
-static stack_x: [u8; 256] = zeroed;
-static stack_y: [u8; 256] = zeroed;
+static board: [u8; 3000] = zeroed;
+static stack_x: [u8; 3000] = zeroed;
+static stack_y: [u8; 3000] = zeroed;
 static stack_ptr: u16 = 0;
+
+// 动态难度配置
+static board_w: u16 = 16;
+static board_h: u16 = 16;
+static total_mines: u16 = 40;
 
 static cursor_x: u16 = 0;
 static cursor_y: u16 = 0;
-static game_state: u8 = 0; // 0: 游玩中, 1: 胜利, 2: 失败
+static game_state: u16 = 0; // 0: 游玩中, 1: 胜利, 2: 失败
 static cells_revealed: u16 = 0;
-static first_click: u8 = 1; // 记录是否是第一次点击
+static first_click: u16 = 1;
 static seed: u32 = 114514;
 
 // 屏幕渲染状态
 static screen_cursor: u16 = 0;
 static screen_column: u16 = 0;
-static text_foreground: u8 = 0xFF;
-static text_background: u8 = 0x00;
+static text_foreground: u16 = 0xFF;
+static text_background: u16 = 0x00;
 
 static draw_x: u16 = 0;
 static draw_y: u16 = 0;
 static draw_idx: u16 = 0;
 static draw_ptr: u16 = 0;
 
-// 字符串常量 (长度对齐以覆盖旧文本)
-static str_start: [u8; _] = b"Minesweeper\nPress any key to start...\0";
-static str_playing: [u8; _] = b"Playing... (UP/RIGHT/DOWN/LEFT move, Z reveal, X flag, R restart)    \0";
-static str_won: [u8; _] = b"You Won! Press R to restart.                                   \0";
-static str_lost: [u8; _] = b"You Lost! Press R to restart.                                    \0";
+static str_menu: [u8; _] = b"Minesweeper OS\n\nSelect Difficulty:\n1. Beginner (9x9, 10 mines)\n2. Intermediate (16x16, 40 mines)\n3. Expert (30x16, 99 mines)\n4. Custom\n\n> \0";
+static str_prompt_w: [u8; _] = b"Width (5-90): \0";
+static str_prompt_h: [u8; _] = b"Height (5-30): \0";
+static str_prompt_m: [u8; _] = b"Mines: \0";
+
+static str_playing: [u8; _] = b"Playing... (Arrows move, Z reveal, X flag, R restart, M menu)    \0";
+static str_won: [u8; _] = b"You Won! Press R to restart, M for menu.                              \0";
+static str_lost: [u8; _] = b"You Lost! Press R to restart, M for menu.                             \0";
 
 static framebuffer: [u8; 1] = zeroed;
 
@@ -58,50 +76,139 @@ fn main() -> void {
     screen_buffer(framebuffer);
     screen_mode(SCREEN_MODE_ASCII32);
 
+    // 主循环：菜单 -> 初始化 -> 游玩 -> 返回菜单
+    loop {
+        show_menu();
+        init_game();
+        play_game();
+    }
+}
+
+fn show_menu() -> void {
+    clear_screen();
     screen_cursor = framebuffer;
     screen_column = 0;
-    clear_screen();
     text_foreground = COLOR_WHITE;
     text_background = COLOR_BLACK;
-    print_string(str_start);
+    print_string(str_menu);
 
     let event: u16 = 0;
     let key: u16 = 0;
+    let max_m: u16 = 0;
 
-    // 利用玩家反应时间生成随机种子
-    while event != KEYBOARD_MASK_EVENT {
+    loop {
+        seed = seed + 1; // 在等待菜单输入时持续生成随机种子
+        event = keyboard_read();
+        key = event & KEYBOARD_MASK_KEY;
+        event = event & KEYBOARD_MASK_EVENT;
+
+        if event != KEYBOARD_MASK_EVENT {
+            continue;
+        }
+
+        if key == KEY_1 {
+            board_w = 9; board_h = 9; total_mines = 10; break;
+        }
+        if key == KEY_2 {
+            board_w = 16; board_h = 16; total_mines = 40; break;
+        }
+        if key == KEY_3 {
+            board_w = 30; board_h = 16; total_mines = 99; break;
+        }
+        if key == KEY_4 {
+            newline();
+            print_string(str_prompt_w);
+            board_w = read_number();
+            if board_w > 90 { board_w = 90; }
+            if board_w < 5 { board_w = 5; }
+
+            print_string(str_prompt_h);
+            board_h = read_number();
+            if board_h > 30 { board_h = 30; }
+            if board_h < 5 { board_h = 5; }
+
+            print_string(str_prompt_m);
+            total_mines = read_number();
+            max_m = board_w * board_h;
+            max_m = max_m - 1; // 雷数不能等于或超过格子总数
+            if total_mines > max_m { total_mines = max_m; }
+            if total_mines < 1 { total_mines = 1; }
+            break;
+        }
+    }
+}
+
+fn read_number() -> u16 {
+    let val: u16 = 0;
+    let event: u16 = 0;
+    let key: u16 = 0;
+    loop {
         seed = seed + 1;
         event = keyboard_read();
+        key = event & KEYBOARD_MASK_KEY;
         event = event & KEYBOARD_MASK_EVENT;
+
+        if event != KEYBOARD_MASK_EVENT { continue; }
+
+        if key == KEY_ENTER {
+            newline();
+            return val;
+        }
+        
+        // 统一退格键处理
+        if key == KEY_BACKSPACE { key = KEY_BACKSPACE_ALT; }
+        if key == KEY_BACKSPACE_ALT {
+            if val > 0 {
+                val = val / 10;
+                if screen_column > 0 {
+                    screen_column = screen_column - 1;
+                    screen_cursor = screen_cursor - 4;
+                    store8(screen_cursor, 32);
+                }
+            }
+            continue;
+        }
+
+        if key >= 48 {
+            if key <= 57 {
+                val = (val * 10) + (key - 48);
+                put_char(key);
+            }
+        }
     }
+}
 
-    init_game();
+fn play_game() -> void {
+    let event: u16 = 0;
+    let key: u16 = 0;
+    let max_x: u16 = 0;
+    let max_y: u16 = 0;
 
-    // 主循环
     loop {
         event = keyboard_read();
         key = event & KEYBOARD_MASK_KEY;
         event = event & KEYBOARD_MASK_EVENT;
 
-        // 仅在按键按下时处理，避免无效重绘
         if event != KEYBOARD_MASK_EVENT {
             continue;
         }
 
         key = to_lower(key);
+        max_x = board_w - 1;
+        max_y = board_h - 1;
 
         if game_state == 0 {
             if key == KEY_UP {
                 if cursor_y > 0 { cursor_y = cursor_y - 1; }
             }
             if key == KEY_DOWN {
-                if cursor_y < 15 { cursor_y = cursor_y + 1; }
+                if cursor_y < max_y { cursor_y = cursor_y + 1; }
             }
             if key == KEY_LEFT {
                 if cursor_x > 0 { cursor_x = cursor_x - 1; }
             }
             if key == KEY_RIGHT {
-                if cursor_x < 15 { cursor_x = cursor_x + 1; }
+                if cursor_x < max_x { cursor_x = cursor_x + 1; }
             }
             if key == KEY_Z {
                 do_reveal(cursor_x, cursor_y);
@@ -113,6 +220,10 @@ fn main() -> void {
 
         if key == KEY_R {
             init_game();
+            continue;
+        }
+        if key == KEY_M {
+            return;
         }
 
         draw_board();
@@ -121,7 +232,8 @@ fn main() -> void {
 
 fn init_game() -> void {
     let i: u16 = 0;
-    while i < 256 {
+    let total: u16 = board_w * board_h;
+    while i < total {
         store8(board + i, 0);
         i = i + 1;
     }
@@ -147,25 +259,23 @@ fn rand() -> u32 {
     return seed;
 }
 
-// 仅避开第一次点击的坐标
 fn place_mines(safe_x: u16, safe_y: u16) -> void {
     let placed: u16 = 0;
     let rx: u16 = 0;
     let ry: u16 = 0;
     let idx: u16 = 0;
 
-    while placed < 40 {
-        rx = rand() % 16;
-        ry = rand() % 16;
+    while placed < total_mines {
+        rx = rand() % board_w;
+        ry = rand() % board_h;
 
-        // 如果随机到了第一次点击的格子，则跳过
         if rx == safe_x {
             if ry == safe_y {
                 continue;
             }
         }
 
-        idx = board + (ry << 4) + rx;
+        idx = board + (ry * board_w) + rx;
         if (load8(idx) & 15) != 9 {
             store8(idx, load8(idx) | 9);
             placed = placed + 1;
@@ -176,13 +286,13 @@ fn place_mines(safe_x: u16, safe_y: u16) -> void {
 fn calc_numbers() -> void {
     let x: u16 = 0;
     let y: u16 = 0;
-    let count: u8 = 0;
+    let count: u16 = 0;
     let idx: u16 = 0;
 
-    while y < 16 {
+    while y < board_h {
         x = 0;
-        while x < 16 {
-            idx = board + (y << 4) + x;
+        while x < board_w {
+            idx = board + (y * board_w) + x;
             if (load8(idx) & 15) != 9 {
                 count = count_adjacent(x, y);
                 store8(idx, (load8(idx) & 48) | count);
@@ -193,8 +303,8 @@ fn calc_numbers() -> void {
     }
 }
 
-fn count_adjacent(x: u16, y: u16) -> u8 {
-    let count: u8 = 0;
+fn count_adjacent(x: u16, y: u16) -> u16 {
+    let count: u16 = 0;
     if is_mine(x - 1, y - 1) == true { count = count + 1; }
     if is_mine(x, y - 1) == true { count = count + 1; }
     if is_mine(x + 1, y - 1) == true { count = count + 1; }
@@ -207,9 +317,9 @@ fn count_adjacent(x: u16, y: u16) -> u8 {
 }
 
 fn is_mine(x: u16, y: u16) -> bool {
-    if x >= 16 { return false; }
-    if y >= 16 { return false; }
-    let val: u8 = load8(board + (y << 4) + x);
+    if x >= board_w { return false; }
+    if y >= board_h { return false; }
+    let val: u16 = load8(board + (y * board_w) + x);
     if (val & 15) == 9 {
         return true;
     }
@@ -217,10 +327,10 @@ fn is_mine(x: u16, y: u16) -> bool {
 }
 
 fn do_reveal(x: u16, y: u16) -> void {
-    let idx: u16 = board + (y << 4) + x;
-    let val: u8 = load8(idx);
+    let idx: u16 = board + (y * board_w) + x;
+    let val: u16 = load8(idx);
+    let target: u16 = 0;
 
-    // 如果是第一次点击，则在此刻生成地雷并计算数字
     if first_click == 1 {
         first_click = 0;
         place_mines(x, y);
@@ -228,17 +338,14 @@ fn do_reveal(x: u16, y: u16) -> void {
         val = load8(idx);
     }
 
-    // 如果已揭开或已插旗，则忽略玩家的手动点击
     if (val & 48) != 0 { return; }
 
-    // 踩到地雷
     if (val & 15) == 9 {
         game_state = 2;
         reveal_all_mines();
         return;
     }
 
-    // 揭开当前单元格并准备泛洪展开
     stack_ptr = 0;
     store8(idx, (val & 15) | 16);
     cells_revealed = cells_revealed + 1;
@@ -250,29 +357,28 @@ fn do_reveal(x: u16, y: u16) -> void {
         pop_and_expand();
     }
 
-    // 256 - 40 = 216
-    if cells_revealed == 216 {
+    // 动态计算胜利条件
+    target = board_w * board_h;
+    target = target - total_mines;
+    if cells_revealed == target {
         game_state = 1;
     }
 }
 
 fn try_push(x: u16, y: u16) -> void {
     let idx: u16 = 0;
-    let val: u8 = 0;
+    let val: u16 = 0;
 
-    if x < 16 {
-        if y < 16 {
-            idx = board + (y << 4) + x;
+    if x < board_w {
+        if y < board_h {
+            idx = board + (y * board_w) + x;
             val = load8(idx);
             
-            // 只要没被揭开就处理（无视旗帜）
             if (val & 16) == 0 {
-                // (val & 15) 保留低4位数字，| 16 标记为已揭开
-                // 这样操作会自然丢弃掉第5位的旗帜标记（32），实现旗帜消失
                 store8(idx, (val & 15) | 16);
                 cells_revealed = cells_revealed + 1;
                 
-                if stack_ptr < 256 {
+                if stack_ptr < 3000 {
                     store8(stack_x + stack_ptr, x);
                     store8(stack_y + stack_ptr, y);
                     stack_ptr = stack_ptr + 1;
@@ -285,7 +391,7 @@ fn try_push(x: u16, y: u16) -> void {
 fn pop_and_expand() -> void {
     let x: u16 = 0;
     let y: u16 = 0;
-    let val: u8 = 0;
+    let val: u16 = 0;
     let idx: u16 = 0;
 
     while stack_ptr > 0 {
@@ -293,7 +399,7 @@ fn pop_and_expand() -> void {
         x = load8(stack_x + stack_ptr);
         y = load8(stack_y + stack_ptr);
 
-        idx = board + (y << 4) + x;
+        idx = board + (y * board_w) + x;
         val = load8(idx);
 
         if (val & 15) == 0 {
@@ -310,10 +416,9 @@ fn pop_and_expand() -> void {
 }
 
 fn do_flag(x: u16, y: u16) -> void {
-    let idx: u16 = board + (y << 4) + x;
-    let val: u8 = load8(idx);
+    let idx: u16 = board + (y * board_w) + x;
+    let val: u16 = load8(idx);
 
-    // 插旗也算作第一次点击，生成地雷
     if first_click == 1 {
         first_click = 0;
         place_mines(x, y);
@@ -321,15 +426,16 @@ fn do_flag(x: u16, y: u16) -> void {
         val = load8(idx);
     }
 
-    if (val & 16) != 0 { return; } // 已揭开的不能插旗
+    if (val & 16) != 0 { return; }
 
-    store8(idx, val ^ 32); // 异或切换旗帜位
+    store8(idx, val ^ 32);
 }
 
 fn reveal_all_mines() -> void {
     let i: u16 = 0;
-    let val: u8 = 0;
-    while i < 256 {
+    let val: u16 = 0;
+    let total: u16 = board_w * board_h;
+    while i < total {
         val = load8(board + i);
         if (val & 15) == 9 {
             store8(board + i, val | 16);
@@ -340,9 +446,9 @@ fn reveal_all_mines() -> void {
 
 fn draw_board() -> void {
     draw_y = 0;
-    while draw_y < 16 {
+    while draw_y < board_h {
         draw_x = 0;
-        while draw_x < 16 {
+        while draw_x < board_w {
             draw_cell();
             draw_x = draw_x + 1;
         }
@@ -352,13 +458,13 @@ fn draw_board() -> void {
 }
 
 fn draw_cell() -> void {
-    let val: u8 = 0;
-    let ch: u8 = 0;
-    let fg: u8 = COLOR_WHITE;
-    let bg: u8 = COLOR_BLACK;
-    let num: u8 = 0;
+    let val: u16 = 0;
+    let ch: u16 = 0;
+    let fg: u16 = COLOR_WHITE;
+    let bg: u16 = COLOR_BLACK;
+    let num: u16 = 0;
 
-    draw_idx = board + (draw_y << 4) + draw_x;
+    draw_idx = board + (draw_y * board_w) + draw_x;
     val = load8(draw_idx);
 
     if draw_x == cursor_x {
@@ -404,8 +510,9 @@ fn draw_cell() -> void {
 }
 
 fn draw_status() -> void {
-    // 定位到第 20 行，第 2 列
-    screen_cursor = framebuffer + 7688; 
+    // 动态定位到棋盘下方 3 行的位置
+    let sy: u16 = board_h + 3;
+    screen_cursor = framebuffer + ((sy * 96 + 2) << 2);
     screen_column = 2;
     text_foreground = COLOR_WHITE;
     text_background = COLOR_BLACK;
@@ -441,7 +548,7 @@ fn clear_screen() -> void {
 }
 
 fn print_string(text: u16) -> void {
-    let ch: u8 = 0;
+    let ch: u16 = 0;
     loop {
         ch = load8(text);
         if ch == 0 {
@@ -456,7 +563,7 @@ fn print_string(text: u16) -> void {
     }
 }
 
-fn put_char(ch: u8) -> void {
+fn put_char(ch: u16) -> void {
     store8(screen_cursor, ch);
     store8(screen_cursor + 1, text_foreground);
     store8(screen_cursor + 2, text_background);

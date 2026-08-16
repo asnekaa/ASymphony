@@ -1,18 +1,18 @@
-const KEYBOARD_MASK_KEY: u16 = 0x00FF;
-const KEYBOARD_MASK_EVENT: u16 = 0x0100;
-const KEYBOARD_EVENT_PRESSED: u16 = 0x0100;
+const KEYBOARD_MASK_KEY = 0x00FF;
+const KEYBOARD_MASK_EVENT = 0x0100;
+const KEYBOARD_EVENT_PRESSED = 0x0100;
 
-const KEY_ENTER: u16 = 10;
-const KEY_BACKSPACE: u16 = 13;
-const KEY_SHIFT: u16 = 16;
+const KEY_ENTER = 10;
+const KEY_BACKSPACE = 13;
+const KEY_SHIFT = 16;
 
-const SCREEN_MODE_ASCII32: u16 = 1;
-const SCREEN_WIDTH: u16 = 96;
-const SCREEN_SIZE: u16 = 15360;
-const INPUT_MAX_LENGTH: u16 = 79;
+const SCREEN_MODE_ASCII32 = 1;
+const SCREEN_WIDTH = 96;
+const SCREEN_SIZE = 15360;
+const INPUT_MAX_LENGTH: = 79;
 
-const COLOR_WHITE: u16 = 0xFF;
-const COLOR_YELLOW: u16 = 0xFC;
+const COLOR_WHITE = 0xFF;
+const COLOR_YELLOW = 0xFC;
 
 static screen_cursor: u16 = 0;
 static screen_column: u16 = 0;
@@ -29,7 +29,7 @@ static str_help: [u8; _] = b"echo hello, help, clear, time, reboot\0";
 static str_time: [u8; _] = b"time read\0";
 static str_unknown: [u8; _] = b"unknown command\0";
 
-static boot_banner: [u8; _] = b"ASymphony OS v0.1\nCopyright (C) 2026\n\nMemory initialized.\nScreen: ASCII 8 (96x40)\nKeyboard: OK\n\nShift input enabled.\nType \"help\" for available commands.\n\n\0";
+static boot_banner: [u8; _] = b"ASymphony OS v0.1\nCopyright (C) 2026\nScreen: ASCII 8 (96x40)\nType \"help\" for available commands.\n\n\0";
 
 static input_buffer: [u8; 80] = zeroed;
 static framebuffer: [u8; 1] = zeroed;

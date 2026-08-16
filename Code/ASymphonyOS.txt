@@ -830,7 +830,7 @@ str_time:
 str_unknown:
 "unknown command\0"
 boot_banner:
-"ASymphony OS v0.1\nCopyright (C) 2026\n\nMemory initialized.\nScreen: ASCII 8 (96x40)\nKeyboard: OK\n\nShift input enabled.\nType \"help\" for available commands.\n\n\0"
+"ASymphony OS v0.1\nCopyright (C) 2026\nScreen: ASCII 8 (96x40)\nType \"help\" for available commands.\n\n\0"
 input_buffer:
 U8 0
 U8 0

@@ -7,8 +7,16 @@ const KEY_UP = 1
 const KEY_RIGHT = 2
 const KEY_DOWN = 3
 const KEY_LEFT = 4
+const KEY_ENTER = 10
+const KEY_BACKSPACE = 8
+const KEY_BACKSPACE_ALT = 13
+const KEY_1 = 49
+const KEY_2 = 50
+const KEY_3 = 51
+const KEY_4 = 52
 const KEY_A = 97
 const KEY_D = 100
+const KEY_M = 109
 const KEY_R = 114
 const KEY_S = 115
 const KEY_W = 119
@@ -28,46 +36,47 @@ screen r1, r2
 mov r2, 1
 mov r1, 0
 screen r1, r2
+__mel_loop_2:
+call show_menu
+call init_game
+call play_game
+jmp __mel_loop_2
+__mel_endloop_3:
+__mel_main_return_1:
+ret
+
+show_menu:
+push r7
+push r8
+push r9
+call clear_screen
 add r1, zr, framebuffer
 add r2, zr, screen_cursor
 store_16 [r2], r1
 mov r1, 0
 add r2, zr, screen_column
 store_16 [r2], r1
-call clear_screen
 mov r1, 255
 add r2, zr, text_foreground
-store_8 [r2], r1
+store_16 [r2], r1
 mov r1, 0
 add r2, zr, text_background
-store_8 [r2], r1
-add r1, zr, str_start
+store_16 [r2], r1
+add r1, zr, str_menu
 call print_string
 mov r1, 0
 mov r7, r1
 mov r1, 0
 mov r8, r1
-__mel_while_2:
-mov r1, r7
-mov r2, 256
-cmp r1, r2
-je __mel_endwhile_3
+mov r1, 0
+mov r9, r1
+__mel_loop_5:
 add r2, zr, seed
 load_32 r1, [r2]
 mov r2, 1
 add r1, r1, r2
 add r2, zr, seed
 store_32 [r2], r1
-keyboard r1
-mov r7, r1
-mov r1, r7
-mov r2, 256
-and r1, r1, r2
-mov r7, r1
-jmp __mel_while_2
-__mel_endwhile_3:
-call init_game
-__mel_loop_4:
 keyboard r1
 mov r7, r1
 mov r1, r7
@@ -81,153 +90,503 @@ mov r7, r1
 mov r1, r7
 mov r2, 256
 cmp r1, r2
-je __mel_else_6
-jmp __mel_loop_4
-jmp __mel_endif_7
-__mel_else_6:
-__mel_endif_7:
+je __mel_else_7
+jmp __mel_loop_5
+jmp __mel_endif_8
+__mel_else_7:
+__mel_endif_8:
+mov r1, r8
+mov r2, 49
+cmp r1, r2
+jne __mel_else_9
+mov r1, 9
+add r2, zr, board_w
+store_16 [r2], r1
+mov r1, 9
+add r2, zr, board_h
+store_16 [r2], r1
+mov r1, 10
+add r2, zr, total_mines
+store_16 [r2], r1
+jmp __mel_endloop_6
+jmp __mel_endif_10
+__mel_else_9:
+__mel_endif_10:
+mov r1, r8
+mov r2, 50
+cmp r1, r2
+jne __mel_else_11
+mov r1, 16
+add r2, zr, board_w
+store_16 [r2], r1
+mov r1, 16
+add r2, zr, board_h
+store_16 [r2], r1
+mov r1, 40
+add r2, zr, total_mines
+store_16 [r2], r1
+jmp __mel_endloop_6
+jmp __mel_endif_12
+__mel_else_11:
+__mel_endif_12:
+mov r1, r8
+mov r2, 51
+cmp r1, r2
+jne __mel_else_13
+mov r1, 30
+add r2, zr, board_w
+store_16 [r2], r1
+mov r1, 16
+add r2, zr, board_h
+store_16 [r2], r1
+mov r1, 99
+add r2, zr, total_mines
+store_16 [r2], r1
+jmp __mel_endloop_6
+jmp __mel_endif_14
+__mel_else_13:
+__mel_endif_14:
+mov r1, r8
+mov r2, 52
+cmp r1, r2
+jne __mel_else_15
+call newline
+add r1, zr, str_prompt_w
+call print_string
+call read_number
+add r2, zr, board_w
+store_16 [r2], r1
+add r2, zr, board_w
+load_16 r1, [r2]
+mov r2, 90
+cmp r1, r2
+jle __mel_else_17
+mov r1, 90
+add r2, zr, board_w
+store_16 [r2], r1
+jmp __mel_endif_18
+__mel_else_17:
+__mel_endif_18:
+add r2, zr, board_w
+load_16 r1, [r2]
+mov r2, 5
+cmp r1, r2
+jge __mel_else_19
+mov r1, 5
+add r2, zr, board_w
+store_16 [r2], r1
+jmp __mel_endif_20
+__mel_else_19:
+__mel_endif_20:
+add r1, zr, str_prompt_h
+call print_string
+call read_number
+add r2, zr, board_h
+store_16 [r2], r1
+add r2, zr, board_h
+load_16 r1, [r2]
+mov r2, 30
+cmp r1, r2
+jle __mel_else_21
+mov r1, 30
+add r2, zr, board_h
+store_16 [r2], r1
+jmp __mel_endif_22
+__mel_else_21:
+__mel_endif_22:
+add r2, zr, board_h
+load_16 r1, [r2]
+mov r2, 5
+cmp r1, r2
+jge __mel_else_23
+mov r1, 5
+add r2, zr, board_h
+store_16 [r2], r1
+jmp __mel_endif_24
+__mel_else_23:
+__mel_endif_24:
+add r1, zr, str_prompt_m
+call print_string
+call read_number
+add r2, zr, total_mines
+store_16 [r2], r1
+add r2, zr, board_w
+load_16 r1, [r2]
+add r3, zr, board_h
+load_16 r2, [r3]
+mul r1, r1, r2
+mov r9, r1
+mov r1, r9
+mov r2, 1
+sub r1, r1, r2
+mov r9, r1
+add r2, zr, total_mines
+load_16 r1, [r2]
+mov r2, r9
+cmp r1, r2
+jle __mel_else_25
+mov r1, r9
+add r2, zr, total_mines
+store_16 [r2], r1
+jmp __mel_endif_26
+__mel_else_25:
+__mel_endif_26:
+add r2, zr, total_mines
+load_16 r1, [r2]
+mov r2, 1
+cmp r1, r2
+jge __mel_else_27
+mov r1, 1
+add r2, zr, total_mines
+store_16 [r2], r1
+jmp __mel_endif_28
+__mel_else_27:
+__mel_endif_28:
+jmp __mel_endloop_6
+jmp __mel_endif_16
+__mel_else_15:
+__mel_endif_16:
+jmp __mel_loop_5
+__mel_endloop_6:
+__mel_show_menu_return_4:
+pop r9
+pop r8
+pop r7
+ret
+
+read_number:
+push r7
+push r8
+push r9
+mov r1, 0
+mov r7, r1
+mov r1, 0
+mov r8, r1
+mov r1, 0
+mov r9, r1
+__mel_loop_30:
+add r2, zr, seed
+load_32 r1, [r2]
+mov r2, 1
+add r1, r1, r2
+add r2, zr, seed
+store_32 [r2], r1
+keyboard r1
+mov r8, r1
+mov r1, r8
+mov r2, 255
+and r1, r1, r2
+mov r9, r1
+mov r1, r8
+mov r2, 256
+and r1, r1, r2
+mov r8, r1
+mov r1, r8
+mov r2, 256
+cmp r1, r2
+je __mel_else_32
+jmp __mel_loop_30
+jmp __mel_endif_33
+__mel_else_32:
+__mel_endif_33:
+mov r1, r9
+mov r2, 10
+cmp r1, r2
+jne __mel_else_34
+call newline
+mov r1, r7
+jmp __mel_read_number_return_29
+jmp __mel_endif_35
+__mel_else_34:
+__mel_endif_35:
+mov r1, r9
+mov r2, 8
+cmp r1, r2
+jne __mel_else_36
+mov r1, 13
+mov r9, r1
+jmp __mel_endif_37
+__mel_else_36:
+__mel_endif_37:
+mov r1, r9
+mov r2, 13
+cmp r1, r2
+jne __mel_else_38
+mov r1, r7
+mov r2, 0
+cmp r1, r2
+jle __mel_else_40
+mov r1, r7
+mov r2, 10
+div r1, r1, r2
+mov r7, r1
+add r2, zr, screen_column
+load_16 r1, [r2]
+mov r2, 0
+cmp r1, r2
+jle __mel_else_42
+add r2, zr, screen_column
+load_16 r1, [r2]
+mov r2, 1
+sub r1, r1, r2
+add r2, zr, screen_column
+store_16 [r2], r1
+add r2, zr, screen_cursor
+load_16 r1, [r2]
+mov r2, 4
+sub r1, r1, r2
+add r2, zr, screen_cursor
+store_16 [r2], r1
+add r2, zr, screen_cursor
+load_16 r1, [r2]
+mov r2, 32
+store_8 [r1], r2
+jmp __mel_endif_43
+__mel_else_42:
+__mel_endif_43:
+jmp __mel_endif_41
+__mel_else_40:
+__mel_endif_41:
+jmp __mel_loop_30
+jmp __mel_endif_39
+__mel_else_38:
+__mel_endif_39:
+mov r1, r9
+mov r2, 48
+cmp r1, r2
+jl __mel_else_44
+mov r1, r9
+mov r2, 57
+cmp r1, r2
+jg __mel_else_46
+mov r1, r7
+mov r2, 10
+mul r1, r1, r2
+mov r2, r9
+mov r3, 48
+sub r2, r2, r3
+add r1, r1, r2
+mov r7, r1
+mov r1, r9
+call put_char
+jmp __mel_endif_47
+__mel_else_46:
+__mel_endif_47:
+jmp __mel_endif_45
+__mel_else_44:
+__mel_endif_45:
+jmp __mel_loop_30
+__mel_endloop_31:
+__mel_read_number_return_29:
+pop r9
+pop r8
+pop r7
+ret
+
+play_game:
+push r7
+push r8
+push r9
+push r10
+mov r1, 0
+mov r7, r1
+mov r1, 0
+mov r8, r1
+mov r1, 0
+mov r9, r1
+mov r1, 0
+mov r10, r1
+__mel_loop_49:
+keyboard r1
+mov r7, r1
+mov r1, r7
+mov r2, 255
+and r1, r1, r2
+mov r8, r1
+mov r1, r7
+mov r2, 256
+and r1, r1, r2
+mov r7, r1
+mov r1, r7
+mov r2, 256
+cmp r1, r2
+je __mel_else_51
+jmp __mel_loop_49
+jmp __mel_endif_52
+__mel_else_51:
+__mel_endif_52:
 mov r1, r8
 call to_lower
 mov r8, r1
+add r2, zr, board_w
+load_16 r1, [r2]
+mov r2, 1
+sub r1, r1, r2
+mov r9, r1
+add r2, zr, board_h
+load_16 r1, [r2]
+mov r2, 1
+sub r1, r1, r2
+mov r10, r1
 add r2, zr, game_state
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 0
 cmp r1, r2
-jne __mel_else_8
+jne __mel_else_53
 mov r1, r8
 mov r2, 1
 cmp r1, r2
-jne __mel_else_10
+jne __mel_else_55
 add r2, zr, cursor_y
 load_16 r1, [r2]
 mov r2, 0
 cmp r1, r2
-jle __mel_else_12
+jle __mel_else_57
 add r2, zr, cursor_y
 load_16 r1, [r2]
 mov r2, 1
 sub r1, r1, r2
 add r2, zr, cursor_y
 store_16 [r2], r1
-jmp __mel_endif_13
-__mel_else_12:
-__mel_endif_13:
-jmp __mel_endif_11
-__mel_else_10:
-__mel_endif_11:
+jmp __mel_endif_58
+__mel_else_57:
+__mel_endif_58:
+jmp __mel_endif_56
+__mel_else_55:
+__mel_endif_56:
 mov r1, r8
 mov r2, 3
 cmp r1, r2
-jne __mel_else_14
+jne __mel_else_59
 add r2, zr, cursor_y
 load_16 r1, [r2]
-mov r2, 15
+mov r2, r10
 cmp r1, r2
-jge __mel_else_16
+jge __mel_else_61
 add r2, zr, cursor_y
 load_16 r1, [r2]
 mov r2, 1
 add r1, r1, r2
 add r2, zr, cursor_y
 store_16 [r2], r1
-jmp __mel_endif_17
-__mel_else_16:
-__mel_endif_17:
-jmp __mel_endif_15
-__mel_else_14:
-__mel_endif_15:
+jmp __mel_endif_62
+__mel_else_61:
+__mel_endif_62:
+jmp __mel_endif_60
+__mel_else_59:
+__mel_endif_60:
 mov r1, r8
 mov r2, 4
 cmp r1, r2
-jne __mel_else_18
+jne __mel_else_63
 add r2, zr, cursor_x
 load_16 r1, [r2]
 mov r2, 0
 cmp r1, r2
-jle __mel_else_20
+jle __mel_else_65
 add r2, zr, cursor_x
 load_16 r1, [r2]
 mov r2, 1
 sub r1, r1, r2
 add r2, zr, cursor_x
 store_16 [r2], r1
-jmp __mel_endif_21
-__mel_else_20:
-__mel_endif_21:
-jmp __mel_endif_19
-__mel_else_18:
-__mel_endif_19:
+jmp __mel_endif_66
+__mel_else_65:
+__mel_endif_66:
+jmp __mel_endif_64
+__mel_else_63:
+__mel_endif_64:
 mov r1, r8
 mov r2, 2
 cmp r1, r2
-jne __mel_else_22
+jne __mel_else_67
 add r2, zr, cursor_x
 load_16 r1, [r2]
-mov r2, 15
+mov r2, r9
 cmp r1, r2
-jge __mel_else_24
+jge __mel_else_69
 add r2, zr, cursor_x
 load_16 r1, [r2]
 mov r2, 1
 add r1, r1, r2
 add r2, zr, cursor_x
 store_16 [r2], r1
-jmp __mel_endif_25
-__mel_else_24:
-__mel_endif_25:
-jmp __mel_endif_23
-__mel_else_22:
-__mel_endif_23:
+jmp __mel_endif_70
+__mel_else_69:
+__mel_endif_70:
+jmp __mel_endif_68
+__mel_else_67:
+__mel_endif_68:
 mov r1, r8
 mov r2, 122
 cmp r1, r2
-jne __mel_else_26
+jne __mel_else_71
 add r2, zr, cursor_x
 load_16 r1, [r2]
 add r3, zr, cursor_y
 load_16 r2, [r3]
 call do_reveal
-jmp __mel_endif_27
-__mel_else_26:
-__mel_endif_27:
+jmp __mel_endif_72
+__mel_else_71:
+__mel_endif_72:
 mov r1, r8
 mov r2, 120
 cmp r1, r2
-jne __mel_else_28
+jne __mel_else_73
 add r2, zr, cursor_x
 load_16 r1, [r2]
 add r3, zr, cursor_y
 load_16 r2, [r3]
 call do_flag
-jmp __mel_endif_29
-__mel_else_28:
-__mel_endif_29:
-jmp __mel_endif_9
-__mel_else_8:
-__mel_endif_9:
+jmp __mel_endif_74
+__mel_else_73:
+__mel_endif_74:
+jmp __mel_endif_54
+__mel_else_53:
+__mel_endif_54:
 mov r1, r8
 mov r2, 114
 cmp r1, r2
-jne __mel_else_30
+jne __mel_else_75
 call init_game
-jmp __mel_endif_31
-__mel_else_30:
-__mel_endif_31:
+jmp __mel_loop_49
+jmp __mel_endif_76
+__mel_else_75:
+__mel_endif_76:
+mov r1, r8
+mov r2, 109
+cmp r1, r2
+jne __mel_else_77
+jmp __mel_play_game_return_48
+jmp __mel_endif_78
+__mel_else_77:
+__mel_endif_78:
 call draw_board
-jmp __mel_loop_4
-__mel_endloop_5:
-__mel_main_return_1:
+jmp __mel_loop_49
+__mel_endloop_50:
+__mel_play_game_return_48:
+pop r10
+pop r9
+pop r8
+pop r7
 ret
 
 init_game:
 push r7
+push r8
 mov r1, 0
 mov r7, r1
-__mel_while_33:
+add r2, zr, board_w
+load_16 r1, [r2]
+add r3, zr, board_h
+load_16 r2, [r3]
+mul r1, r1, r2
+mov r8, r1
+__mel_while_80:
 mov r1, r7
-mov r2, 256
+mov r2, r8
 cmp r1, r2
-jge __mel_endwhile_34
+jge __mel_endwhile_81
 add r1, zr, board
 mov r2, r7
 add r1, r1, r2
@@ -237,14 +596,14 @@ mov r1, r7
 mov r2, 1
 add r1, r1, r2
 mov r7, r1
-jmp __mel_while_33
-__mel_endwhile_34:
+jmp __mel_while_80
+__mel_endwhile_81:
 mov r1, 0
 add r2, zr, cells_revealed
 store_16 [r2], r1
 mov r1, 0
 add r2, zr, game_state
-store_8 [r2], r1
+store_16 [r2], r1
 mov r1, 0
 add r2, zr, cursor_x
 store_16 [r2], r1
@@ -253,10 +612,11 @@ add r2, zr, cursor_y
 store_16 [r2], r1
 mov r1, 1
 add r2, zr, first_click
-store_8 [r2], r1
+store_16 [r2], r1
 call clear_screen
 call draw_board
-__mel_init_game_return_32:
+__mel_init_game_return_79:
+pop r8
 pop r7
 ret
 
@@ -290,8 +650,8 @@ add r2, zr, seed
 store_32 [r2], r1
 add r2, zr, seed
 load_32 r1, [r2]
-jmp __mel_rand_return_35
-__mel_rand_return_35:
+jmp __mel_rand_return_82
+__mel_rand_return_82:
 pop r8
 pop r7
 ret
@@ -313,38 +673,42 @@ mov r1, 0
 mov r11, r1
 mov r1, 0
 mov r12, r1
-__mel_while_37:
+__mel_while_84:
 mov r1, r9
-mov r2, 40
+add r3, zr, total_mines
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_endwhile_38
+jge __mel_endwhile_85
 call rand
-mov r2, 16
+add r3, zr, board_w
+load_16 r2, [r3]
 mod r1, r1, r2
 mov r10, r1
 call rand
-mov r2, 16
+add r3, zr, board_h
+load_16 r2, [r3]
 mod r1, r1, r2
 mov r11, r1
 mov r1, r10
 mov r2, r7
 cmp r1, r2
-jne __mel_else_39
+jne __mel_else_86
 mov r1, r11
 mov r2, r8
 cmp r1, r2
-jne __mel_else_41
-jmp __mel_while_37
-jmp __mel_endif_42
-__mel_else_41:
-__mel_endif_42:
-jmp __mel_endif_40
-__mel_else_39:
-__mel_endif_40:
+jne __mel_else_88
+jmp __mel_while_84
+jmp __mel_endif_89
+__mel_else_88:
+__mel_endif_89:
+jmp __mel_endif_87
+__mel_else_86:
+__mel_endif_87:
 add r1, zr, board
 mov r2, r11
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r10
 add r1, r1, r2
@@ -355,7 +719,7 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 9
 cmp r1, r2
-je __mel_else_43
+je __mel_else_90
 mov r1, r12
 mov r2, r12
 load_8 r2, [r2]
@@ -366,12 +730,12 @@ mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_44
-__mel_else_43:
-__mel_endif_44:
-jmp __mel_while_37
-__mel_endwhile_38:
-__mel_place_mines_return_36:
+jmp __mel_endif_91
+__mel_else_90:
+__mel_endif_91:
+jmp __mel_while_84
+__mel_endwhile_85:
+__mel_place_mines_return_83:
 pop r12
 pop r11
 pop r10
@@ -393,22 +757,25 @@ mov r1, 0
 mov r9, r1
 mov r1, 0
 mov r10, r1
-__mel_while_46:
+__mel_while_93:
 mov r1, r8
-mov r2, 16
+add r3, zr, board_h
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_endwhile_47
+jge __mel_endwhile_94
 mov r1, 0
 mov r7, r1
-__mel_while_48:
+__mel_while_95:
 mov r1, r7
-mov r2, 16
+add r3, zr, board_w
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_endwhile_49
+jge __mel_endwhile_96
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -419,7 +786,7 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 9
 cmp r1, r2
-je __mel_else_50
+je __mel_else_97
 mov r1, r7
 mov r2, r8
 call count_adjacent
@@ -432,22 +799,22 @@ and r2, r2, r3
 mov r3, r9
 or r2, r2, r3
 store_8 [r1], r2
-jmp __mel_endif_51
-__mel_else_50:
-__mel_endif_51:
+jmp __mel_endif_98
+__mel_else_97:
+__mel_endif_98:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
 mov r7, r1
-jmp __mel_while_48
-__mel_endwhile_49:
+jmp __mel_while_95
+__mel_endwhile_96:
 mov r1, r8
 mov r2, 1
 add r1, r1, r2
 mov r8, r1
-jmp __mel_while_46
-__mel_endwhile_47:
-__mel_calc_numbers_return_45:
+jmp __mel_while_93
+__mel_endwhile_94:
+__mel_calc_numbers_return_92:
 pop r10
 pop r9
 pop r8
@@ -471,14 +838,14 @@ sub r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_53
+jne __mel_else_100
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_54
-__mel_else_53:
-__mel_endif_54:
+jmp __mel_endif_101
+__mel_else_100:
+__mel_endif_101:
 mov r1, r7
 mov r2, r8
 mov r3, 1
@@ -486,14 +853,14 @@ sub r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_55
+jne __mel_else_102
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_56
-__mel_else_55:
-__mel_endif_56:
+jmp __mel_endif_103
+__mel_else_102:
+__mel_endif_103:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
@@ -503,14 +870,14 @@ sub r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_57
+jne __mel_else_104
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_58
-__mel_else_57:
-__mel_endif_58:
+jmp __mel_endif_105
+__mel_else_104:
+__mel_endif_105:
 mov r1, r7
 mov r2, 1
 sub r1, r1, r2
@@ -518,14 +885,14 @@ mov r2, r8
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_59
+jne __mel_else_106
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_60
-__mel_else_59:
-__mel_endif_60:
+jmp __mel_endif_107
+__mel_else_106:
+__mel_endif_107:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
@@ -533,14 +900,14 @@ mov r2, r8
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_61
+jne __mel_else_108
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_62
-__mel_else_61:
-__mel_endif_62:
+jmp __mel_endif_109
+__mel_else_108:
+__mel_endif_109:
 mov r1, r7
 mov r2, 1
 sub r1, r1, r2
@@ -550,14 +917,14 @@ add r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_63
+jne __mel_else_110
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_64
-__mel_else_63:
-__mel_endif_64:
+jmp __mel_endif_111
+__mel_else_110:
+__mel_endif_111:
 mov r1, r7
 mov r2, r8
 mov r3, 1
@@ -565,14 +932,14 @@ add r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_65
+jne __mel_else_112
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_66
-__mel_else_65:
-__mel_endif_66:
+jmp __mel_endif_113
+__mel_else_112:
+__mel_endif_113:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
@@ -582,17 +949,17 @@ add r2, r2, r3
 call is_mine
 mov r2, 1
 cmp r1, r2
-jne __mel_else_67
+jne __mel_else_114
 mov r1, r9
 mov r2, 1
 add r1, r1, r2
 mov r9, r1
-jmp __mel_endif_68
-__mel_else_67:
-__mel_endif_68:
+jmp __mel_endif_115
+__mel_else_114:
+__mel_endif_115:
 mov r1, r9
-jmp __mel_count_adjacent_return_52
-__mel_count_adjacent_return_52:
+jmp __mel_count_adjacent_return_99
+__mel_count_adjacent_return_99:
 pop r9
 pop r8
 pop r7
@@ -605,27 +972,30 @@ push r9
 mov r7, r1
 mov r8, r2
 mov r1, r7
-mov r2, 16
+add r3, zr, board_w
+load_16 r2, [r3]
 cmp r1, r2
-jl __mel_else_70
+jl __mel_else_117
 mov r1, 0
-jmp __mel_is_mine_return_69
-jmp __mel_endif_71
-__mel_else_70:
-__mel_endif_71:
+jmp __mel_is_mine_return_116
+jmp __mel_endif_118
+__mel_else_117:
+__mel_endif_118:
 mov r1, r8
-mov r2, 16
+add r3, zr, board_h
+load_16 r2, [r3]
 cmp r1, r2
-jl __mel_else_72
+jl __mel_else_119
 mov r1, 0
-jmp __mel_is_mine_return_69
-jmp __mel_endif_73
-__mel_else_72:
-__mel_endif_73:
+jmp __mel_is_mine_return_116
+jmp __mel_endif_120
+__mel_else_119:
+__mel_endif_120:
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -636,15 +1006,15 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 9
 cmp r1, r2
-jne __mel_else_74
+jne __mel_else_121
 mov r1, 1
-jmp __mel_is_mine_return_69
-jmp __mel_endif_75
-__mel_else_74:
-__mel_endif_75:
+jmp __mel_is_mine_return_116
+jmp __mel_endif_122
+__mel_else_121:
+__mel_endif_122:
 mov r1, 0
-jmp __mel_is_mine_return_69
-__mel_is_mine_return_69:
+jmp __mel_is_mine_return_116
+__mel_is_mine_return_116:
 pop r9
 pop r8
 pop r7
@@ -655,12 +1025,14 @@ push r7
 push r8
 push r9
 push r10
+push r11
 mov r7, r1
 mov r8, r2
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -668,14 +1040,16 @@ mov r9, r1
 mov r1, r9
 load_8 r1, [r1]
 mov r10, r1
+mov r1, 0
+mov r11, r1
 add r2, zr, first_click
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 1
 cmp r1, r2
-jne __mel_else_77
+jne __mel_else_124
 mov r1, 0
 add r2, zr, first_click
-store_8 [r2], r1
+store_16 [r2], r1
 mov r1, r7
 mov r2, r8
 call place_mines
@@ -683,33 +1057,33 @@ call calc_numbers
 mov r1, r9
 load_8 r1, [r1]
 mov r10, r1
-jmp __mel_endif_78
-__mel_else_77:
-__mel_endif_78:
+jmp __mel_endif_125
+__mel_else_124:
+__mel_endif_125:
 mov r1, r10
 mov r2, 48
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-je __mel_else_79
-jmp __mel_do_reveal_return_76
-jmp __mel_endif_80
-__mel_else_79:
-__mel_endif_80:
+je __mel_else_126
+jmp __mel_do_reveal_return_123
+jmp __mel_endif_127
+__mel_else_126:
+__mel_endif_127:
 mov r1, r10
 mov r2, 15
 and r1, r1, r2
 mov r2, 9
 cmp r1, r2
-jne __mel_else_81
+jne __mel_else_128
 mov r1, 2
 add r2, zr, game_state
-store_8 [r2], r1
+store_16 [r2], r1
 call reveal_all_mines
-jmp __mel_do_reveal_return_76
-jmp __mel_endif_82
-__mel_else_81:
-__mel_endif_82:
+jmp __mel_do_reveal_return_123
+jmp __mel_endif_129
+__mel_else_128:
+__mel_endif_129:
 mov r1, 0
 add r2, zr, stack_ptr
 store_16 [r2], r1
@@ -731,7 +1105,7 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-jne __mel_else_83
+jne __mel_else_130
 add r1, zr, stack_x
 mov r2, r7
 store_8 [r1], r2
@@ -742,21 +1116,33 @@ mov r1, 1
 add r2, zr, stack_ptr
 store_16 [r2], r1
 call pop_and_expand
-jmp __mel_endif_84
-__mel_else_83:
-__mel_endif_84:
+jmp __mel_endif_131
+__mel_else_130:
+__mel_endif_131:
+add r2, zr, board_w
+load_16 r1, [r2]
+add r3, zr, board_h
+load_16 r2, [r3]
+mul r1, r1, r2
+mov r11, r1
+mov r1, r11
+add r3, zr, total_mines
+load_16 r2, [r3]
+sub r1, r1, r2
+mov r11, r1
 add r2, zr, cells_revealed
 load_16 r1, [r2]
-mov r2, 216
+mov r2, r11
 cmp r1, r2
-jne __mel_else_85
+jne __mel_else_132
 mov r1, 1
 add r2, zr, game_state
-store_8 [r2], r1
-jmp __mel_endif_86
-__mel_else_85:
-__mel_endif_86:
-__mel_do_reveal_return_76:
+store_16 [r2], r1
+jmp __mel_endif_133
+__mel_else_132:
+__mel_endif_133:
+__mel_do_reveal_return_123:
+pop r11
 pop r10
 pop r9
 pop r8
@@ -775,17 +1161,20 @@ mov r9, r1
 mov r1, 0
 mov r10, r1
 mov r1, r7
-mov r2, 16
+add r3, zr, board_w
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_else_88
+jge __mel_else_135
 mov r1, r8
-mov r2, 16
+add r3, zr, board_h
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_else_90
+jge __mel_else_137
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -798,7 +1187,7 @@ mov r2, 16
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-jne __mel_else_92
+jne __mel_else_139
 mov r1, r9
 mov r2, r10
 mov r3, 15
@@ -814,9 +1203,9 @@ add r2, zr, cells_revealed
 store_16 [r2], r1
 add r2, zr, stack_ptr
 load_16 r1, [r2]
-mov r2, 256
+mov r2, 3000
 cmp r1, r2
-jge __mel_else_94
+jge __mel_else_141
 add r1, zr, stack_x
 add r3, zr, stack_ptr
 load_16 r2, [r3]
@@ -835,19 +1224,19 @@ mov r2, 1
 add r1, r1, r2
 add r2, zr, stack_ptr
 store_16 [r2], r1
-jmp __mel_endif_95
-__mel_else_94:
-__mel_endif_95:
-jmp __mel_endif_93
-__mel_else_92:
-__mel_endif_93:
-jmp __mel_endif_91
-__mel_else_90:
-__mel_endif_91:
-jmp __mel_endif_89
-__mel_else_88:
-__mel_endif_89:
-__mel_try_push_return_87:
+jmp __mel_endif_142
+__mel_else_141:
+__mel_endif_142:
+jmp __mel_endif_140
+__mel_else_139:
+__mel_endif_140:
+jmp __mel_endif_138
+__mel_else_137:
+__mel_endif_138:
+jmp __mel_endif_136
+__mel_else_135:
+__mel_endif_136:
+__mel_try_push_return_134:
 pop r10
 pop r9
 pop r8
@@ -867,12 +1256,12 @@ mov r1, 0
 mov r9, r1
 mov r1, 0
 mov r10, r1
-__mel_while_97:
+__mel_while_144:
 add r2, zr, stack_ptr
 load_16 r1, [r2]
 mov r2, 0
 cmp r1, r2
-jle __mel_endwhile_98
+jle __mel_endwhile_145
 add r2, zr, stack_ptr
 load_16 r1, [r2]
 mov r2, 1
@@ -893,8 +1282,9 @@ load_8 r1, [r1]
 mov r8, r1
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -907,7 +1297,7 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-jne __mel_else_99
+jne __mel_else_146
 mov r1, r7
 mov r2, 1
 sub r1, r1, r2
@@ -956,12 +1346,12 @@ mov r2, r8
 mov r3, 1
 add r2, r2, r3
 call try_push
-jmp __mel_endif_100
-__mel_else_99:
-__mel_endif_100:
-jmp __mel_while_97
-__mel_endwhile_98:
-__mel_pop_and_expand_return_96:
+jmp __mel_endif_147
+__mel_else_146:
+__mel_endif_147:
+jmp __mel_while_144
+__mel_endwhile_145:
+__mel_pop_and_expand_return_143:
 pop r10
 pop r9
 pop r8
@@ -977,8 +1367,9 @@ mov r7, r1
 mov r8, r2
 add r1, zr, board
 mov r2, r8
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 mov r2, r7
 add r1, r1, r2
@@ -987,13 +1378,13 @@ mov r1, r9
 load_8 r1, [r1]
 mov r10, r1
 add r2, zr, first_click
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 1
 cmp r1, r2
-jne __mel_else_102
+jne __mel_else_149
 mov r1, 0
 add r2, zr, first_click
-store_8 [r2], r1
+store_16 [r2], r1
 mov r1, r7
 mov r2, r8
 call place_mines
@@ -1001,25 +1392,25 @@ call calc_numbers
 mov r1, r9
 load_8 r1, [r1]
 mov r10, r1
-jmp __mel_endif_103
-__mel_else_102:
-__mel_endif_103:
+jmp __mel_endif_150
+__mel_else_149:
+__mel_endif_150:
 mov r1, r10
 mov r2, 16
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-je __mel_else_104
-jmp __mel_do_flag_return_101
-jmp __mel_endif_105
-__mel_else_104:
-__mel_endif_105:
+je __mel_else_151
+jmp __mel_do_flag_return_148
+jmp __mel_endif_152
+__mel_else_151:
+__mel_endif_152:
 mov r1, r9
 mov r2, r10
 mov r3, 32
 xor r2, r2, r3
 store_8 [r1], r2
-__mel_do_flag_return_101:
+__mel_do_flag_return_148:
 pop r10
 pop r9
 pop r8
@@ -1029,15 +1420,22 @@ ret
 reveal_all_mines:
 push r7
 push r8
+push r9
 mov r1, 0
 mov r7, r1
 mov r1, 0
 mov r8, r1
-__mel_while_107:
+add r2, zr, board_w
+load_16 r1, [r2]
+add r3, zr, board_h
+load_16 r2, [r3]
+mul r1, r1, r2
+mov r9, r1
+__mel_while_154:
 mov r1, r7
-mov r2, 256
+mov r2, r9
 cmp r1, r2
-jge __mel_endwhile_108
+jge __mel_endwhile_155
 add r1, zr, board
 mov r2, r7
 add r1, r1, r2
@@ -1048,7 +1446,7 @@ mov r2, 15
 and r1, r1, r2
 mov r2, 9
 cmp r1, r2
-jne __mel_else_109
+jne __mel_else_156
 add r1, zr, board
 mov r2, r7
 add r1, r1, r2
@@ -1056,16 +1454,17 @@ mov r2, r8
 mov r3, 16
 or r2, r2, r3
 store_8 [r1], r2
-jmp __mel_endif_110
-__mel_else_109:
-__mel_endif_110:
+jmp __mel_endif_157
+__mel_else_156:
+__mel_endif_157:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
 mov r7, r1
-jmp __mel_while_107
-__mel_endwhile_108:
-__mel_reveal_all_mines_return_106:
+jmp __mel_while_154
+__mel_endwhile_155:
+__mel_reveal_all_mines_return_153:
+pop r9
 pop r8
 pop r7
 ret
@@ -1074,21 +1473,23 @@ draw_board:
 mov r1, 0
 add r2, zr, draw_y
 store_16 [r2], r1
-__mel_while_112:
+__mel_while_159:
 add r2, zr, draw_y
 load_16 r1, [r2]
-mov r2, 16
+add r3, zr, board_h
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_endwhile_113
+jge __mel_endwhile_160
 mov r1, 0
 add r2, zr, draw_x
 store_16 [r2], r1
-__mel_while_114:
+__mel_while_161:
 add r2, zr, draw_x
 load_16 r1, [r2]
-mov r2, 16
+add r3, zr, board_w
+load_16 r2, [r3]
 cmp r1, r2
-jge __mel_endwhile_115
+jge __mel_endwhile_162
 call draw_cell
 add r2, zr, draw_x
 load_16 r1, [r2]
@@ -1096,18 +1497,18 @@ mov r2, 1
 add r1, r1, r2
 add r2, zr, draw_x
 store_16 [r2], r1
-jmp __mel_while_114
-__mel_endwhile_115:
+jmp __mel_while_161
+__mel_endwhile_162:
 add r2, zr, draw_y
 load_16 r1, [r2]
 mov r2, 1
 add r1, r1, r2
 add r2, zr, draw_y
 store_16 [r2], r1
-jmp __mel_while_112
-__mel_endwhile_113:
+jmp __mel_while_159
+__mel_endwhile_160:
 call draw_status
-__mel_draw_board_return_111:
+__mel_draw_board_return_158:
 ret
 
 draw_cell:
@@ -1129,8 +1530,9 @@ mov r11, r1
 add r1, zr, board
 add r3, zr, draw_y
 load_16 r2, [r3]
-mov r3, 4
-lsl r2, r2, r3
+add r4, zr, board_w
+load_16 r3, [r4]
+mul r2, r2, r3
 add r1, r1, r2
 add r3, zr, draw_x
 load_16 r2, [r3]
@@ -1146,29 +1548,29 @@ load_16 r1, [r2]
 add r3, zr, cursor_x
 load_16 r2, [r3]
 cmp r1, r2
-jne __mel_else_117
+jne __mel_else_164
 add r2, zr, draw_y
 load_16 r1, [r2]
 add r3, zr, cursor_y
 load_16 r2, [r3]
 cmp r1, r2
-jne __mel_else_119
+jne __mel_else_166
 mov r1, 252
 mov r10, r1
 mov r1, 0
 mov r9, r1
-jmp __mel_endif_120
-__mel_else_119:
-__mel_endif_120:
-jmp __mel_endif_118
-__mel_else_117:
-__mel_endif_118:
+jmp __mel_endif_167
+__mel_else_166:
+__mel_endif_167:
+jmp __mel_endif_165
+__mel_else_164:
+__mel_endif_165:
 mov r1, r7
 mov r2, 16
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-je __mel_else_121
+je __mel_else_168
 mov r1, r7
 mov r2, 15
 and r1, r1, r2
@@ -1176,50 +1578,50 @@ mov r11, r1
 mov r1, r11
 mov r2, 9
 cmp r1, r2
-jne __mel_else_123
+jne __mel_else_170
 mov r1, 42
 mov r8, r1
-jmp __mel_endif_124
-__mel_else_123:
+jmp __mel_endif_171
+__mel_else_170:
 mov r1, r11
 mov r2, 0
 cmp r1, r2
-jne __mel_else_125
+jne __mel_else_172
 mov r1, 32
 mov r8, r1
-jmp __mel_endif_126
-__mel_else_125:
+jmp __mel_endif_173
+__mel_else_172:
 mov r1, 48
 mov r2, r11
 add r1, r1, r2
 mov r8, r1
-__mel_endif_126:
-__mel_endif_124:
-jmp __mel_endif_122
-__mel_else_121:
+__mel_endif_173:
+__mel_endif_171:
+jmp __mel_endif_169
+__mel_else_168:
 mov r1, r7
 mov r2, 32
 and r1, r1, r2
 mov r2, 0
 cmp r1, r2
-je __mel_else_127
+je __mel_else_174
 mov r1, 70
 mov r8, r1
 mov r1, r10
 mov r2, 0
 cmp r1, r2
-jne __mel_else_129
+jne __mel_else_176
 mov r1, 252
 mov r9, r1
-jmp __mel_endif_130
-__mel_else_129:
-__mel_endif_130:
-jmp __mel_endif_128
-__mel_else_127:
+jmp __mel_endif_177
+__mel_else_176:
+__mel_endif_177:
+jmp __mel_endif_175
+__mel_else_174:
 mov r1, 35
 mov r8, r1
-__mel_endif_128:
-__mel_endif_122:
+__mel_endif_175:
+__mel_endif_169:
 add r2, zr, draw_y
 load_16 r1, [r2]
 mov r2, 2
@@ -1275,7 +1677,7 @@ mov r2, 3
 add r1, r1, r2
 mov r2, 0
 store_8 [r1], r2
-__mel_draw_cell_return_116:
+__mel_draw_cell_return_163:
 pop r11
 pop r10
 pop r9
@@ -1284,8 +1686,20 @@ pop r7
 ret
 
 draw_status:
+push r7
+add r2, zr, board_h
+load_16 r1, [r2]
+mov r2, 3
+add r1, r1, r2
+mov r7, r1
 add r1, zr, framebuffer
-mov r2, 7688
+mov r2, r7
+mov r3, 96
+mul r2, r2, r3
+mov r3, 2
+add r2, r2, r3
+mov r3, 2
+lsl r2, r2, r3
 add r1, r1, r2
 add r2, zr, screen_cursor
 store_16 [r2], r1
@@ -1294,41 +1708,42 @@ add r2, zr, screen_column
 store_16 [r2], r1
 mov r1, 255
 add r2, zr, text_foreground
-store_8 [r2], r1
+store_16 [r2], r1
 mov r1, 0
 add r2, zr, text_background
-store_8 [r2], r1
+store_16 [r2], r1
 add r2, zr, game_state
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 0
 cmp r1, r2
-jne __mel_else_132
+jne __mel_else_179
 add r1, zr, str_playing
 call print_string
-jmp __mel_endif_133
-__mel_else_132:
-__mel_endif_133:
+jmp __mel_endif_180
+__mel_else_179:
+__mel_endif_180:
 add r2, zr, game_state
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 1
 cmp r1, r2
-jne __mel_else_134
+jne __mel_else_181
 add r1, zr, str_won
 call print_string
-jmp __mel_endif_135
-__mel_else_134:
-__mel_endif_135:
+jmp __mel_endif_182
+__mel_else_181:
+__mel_endif_182:
 add r2, zr, game_state
-load_8 r1, [r2]
+load_16 r1, [r2]
 mov r2, 2
 cmp r1, r2
-jne __mel_else_136
+jne __mel_else_183
 add r1, zr, str_lost
 call print_string
-jmp __mel_endif_137
-__mel_else_136:
-__mel_endif_137:
-__mel_draw_status_return_131:
+jmp __mel_endif_184
+__mel_else_183:
+__mel_endif_184:
+__mel_draw_status_return_178:
+pop r7
 ret
 
 to_lower:
@@ -1337,24 +1752,24 @@ mov r7, r1
 mov r1, r7
 mov r2, 65
 cmp r1, r2
-jl __mel_else_139
+jl __mel_else_186
 mov r1, r7
 mov r2, 90
 cmp r1, r2
-jg __mel_else_141
+jg __mel_else_188
 mov r1, r7
 mov r2, 32
 add r1, r1, r2
-jmp __mel_to_lower_return_138
-jmp __mel_endif_142
-__mel_else_141:
-__mel_endif_142:
-jmp __mel_endif_140
-__mel_else_139:
-__mel_endif_140:
+jmp __mel_to_lower_return_185
+jmp __mel_endif_189
+__mel_else_188:
+__mel_endif_189:
+jmp __mel_endif_187
+__mel_else_186:
+__mel_endif_187:
 mov r1, r7
-jmp __mel_to_lower_return_138
-__mel_to_lower_return_138:
+jmp __mel_to_lower_return_185
+__mel_to_lower_return_185:
 pop r7
 ret
 
@@ -1365,11 +1780,11 @@ add r1, zr, framebuffer
 mov r7, r1
 mov r1, 15360
 mov r8, r1
-__mel_while_144:
+__mel_while_191:
 mov r1, r8
 mov r2, 0
 cmp r1, r2
-je __mel_endwhile_145
+je __mel_endwhile_192
 mov r1, r7
 mov r2, 0
 store_8 [r1], r2
@@ -1381,9 +1796,9 @@ mov r1, r8
 mov r2, 1
 sub r1, r1, r2
 mov r8, r1
-jmp __mel_while_144
-__mel_endwhile_145:
-__mel_clear_screen_return_143:
+jmp __mel_while_191
+__mel_endwhile_192:
+__mel_clear_screen_return_190:
 pop r8
 pop r7
 ret
@@ -1394,35 +1809,35 @@ push r8
 mov r7, r1
 mov r1, 0
 mov r8, r1
-__mel_loop_147:
+__mel_loop_194:
 mov r1, r7
 load_8 r1, [r1]
 mov r8, r1
 mov r1, r8
 mov r2, 0
 cmp r1, r2
-jne __mel_else_149
-jmp __mel_print_string_return_146
-jmp __mel_endif_150
-__mel_else_149:
-__mel_endif_150:
+jne __mel_else_196
+jmp __mel_print_string_return_193
+jmp __mel_endif_197
+__mel_else_196:
+__mel_endif_197:
 mov r1, r8
 mov r2, 10
 cmp r1, r2
-jne __mel_else_151
+jne __mel_else_198
 call newline
-jmp __mel_endif_152
-__mel_else_151:
+jmp __mel_endif_199
+__mel_else_198:
 mov r1, r8
 call put_char
-__mel_endif_152:
+__mel_endif_199:
 mov r1, r7
 mov r2, 1
 add r1, r1, r2
 mov r7, r1
-jmp __mel_loop_147
-__mel_endloop_148:
-__mel_print_string_return_146:
+jmp __mel_loop_194
+__mel_endloop_195:
+__mel_print_string_return_193:
 pop r8
 pop r7
 ret
@@ -1439,14 +1854,14 @@ load_16 r1, [r2]
 mov r2, 1
 add r1, r1, r2
 add r3, zr, text_foreground
-load_8 r2, [r3]
+load_16 r2, [r3]
 store_8 [r1], r2
 add r2, zr, screen_cursor
 load_16 r1, [r2]
 mov r2, 2
 add r1, r1, r2
 add r3, zr, text_background
-load_8 r2, [r3]
+load_16 r2, [r3]
 store_8 [r1], r2
 add r2, zr, screen_cursor
 load_16 r1, [r2]
@@ -1470,14 +1885,14 @@ add r2, zr, screen_column
 load_16 r1, [r2]
 mov r2, 96
 cmp r1, r2
-jne __mel_else_154
+jne __mel_else_201
 mov r1, 0
 add r2, zr, screen_column
 store_16 [r2], r1
-jmp __mel_endif_155
-__mel_else_154:
-__mel_endif_155:
-__mel_put_char_return_153:
+jmp __mel_endif_202
+__mel_else_201:
+__mel_endif_202:
+__mel_put_char_return_200:
 pop r7
 ret
 
@@ -1499,12 +1914,2756 @@ store_16 [r2], r1
 mov r1, 0
 add r2, zr, screen_column
 store_16 [r2], r1
-__mel_newline_return_156:
+__mel_newline_return_203:
 pop r7
 ret
 
 
 board:
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
 U8 0
 U8 0
 U8 0
@@ -2018,7 +5177,5495 @@ U8 0
 U8 0
 U8 0
 U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
 stack_y:
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
+U8 0
 U8 0
 U8 0
 U8 0
@@ -2277,16 +10924,22 @@ U8 0
 U8 0
 stack_ptr:
 U16 0
+board_w:
+U16 16
+board_h:
+U16 16
+total_mines:
+U16 40
 cursor_x:
 U16 0
 cursor_y:
 U16 0
 game_state:
-U8 0
+U16 0
 cells_revealed:
 U16 0
 first_click:
-U8 1
+U16 1
 seed:
 U32 114514
 screen_cursor:
@@ -2294,9 +10947,9 @@ U16 0
 screen_column:
 U16 0
 text_foreground:
-U8 255
+U16 255
 text_background:
-U8 0
+U16 0
 draw_x:
 U16 0
 draw_y:
@@ -2305,13 +10958,19 @@ draw_idx:
 U16 0
 draw_ptr:
 U16 0
-str_start:
-"Minesweeper\nPress any key to start...\0"
+str_menu:
+"Minesweeper OS\n\nSelect Difficulty:\n1. Beginner (9x9, 10 mines)\n2. Intermediate (16x16, 40 mines)\n3. Expert (30x16, 99 mines)\n4. Custom\n\n> \0"
+str_prompt_w:
+"Width (5-90): \0"
+str_prompt_h:
+"Height (5-30): \0"
+str_prompt_m:
+"Mines: \0"
 str_playing:
-"Playing... (UP/RIGHT/DOWN/LEFT move, Z reveal, X flag, R restart)    \0"
+"Playing... (Arrows move, Z reveal, X flag, R restart, M menu)    \0"
 str_won:
-"You Won! Press R to restart.                                   \0"
+"You Won! Press R to restart, M for menu.                              \0"
 str_lost:
-"You Lost! Press R to restart.                                    \0"
+"You Lost! Press R to restart, M for menu.                             \0"
 framebuffer:
 U8 0
